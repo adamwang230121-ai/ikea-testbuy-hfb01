@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IKEA Test Buy</title>
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -12,1793 +12,930 @@
 <meta name="theme-color" content="#0058A3">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
-  :root {
-    --ikea-blue: #0058A3;
-    --ikea-yellow: #FFDA1A;
-    --ikea-dark: #111111;
-    --ikea-gray: #F5F5F5;
-    --ikea-border: #DFDFDF;
-    --ikea-text: #333;
-    --ikea-muted: #767676;
-    --ok: #168740;
-    --warn: #E67700;
-    --fail: #CC0008;
-    --radius: 10px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
-    background: #EBEBEB;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 20px 10px;
-  }
-  .phone {
-    width: 390px;
-    min-height: 844px;
-    background: white;
-    border-radius: 40px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
+:root{--blue:#0058A3;--yellow:#FFDA1A;--ok:#168740;--warn:#E67700;--fail:#CC0008;--gray:#F5F5F5;--border:#DFDFDF;--text:#333;--muted:#767676;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background:#EBEBEB;display:flex;justify-content:center;padding:20px 10px;min-height:100vh}
+.phone{width:390px;min-height:844px;background:#fff;border-radius:40px;box-shadow:0 30px 80px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.sbar{background:var(--blue);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 24px 6px;font-size:13px;font-weight:600}
+.logo{background:var(--yellow);color:var(--blue);font-weight:900;font-size:12px;padding:3px 7px;border-radius:5px}
+.hdr{background:var(--blue);color:#fff;padding:14px 20px 18px;display:flex;align-items:center;gap:12px}
+.hdr-back{font-size:22px;cursor:pointer;padding:4px;opacity:.85}
+.hdr h1{font-size:18px;font-weight:800;flex:1}
+.hdr p{font-size:12px;opacity:.75;margin-top:2px}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
+.screen.active{display:flex}
+.scroll{flex:1;overflow-y:auto;padding-bottom:80px}
+.scroll::-webkit-scrollbar{display:none}
+.bnav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 14px;cursor:pointer;color:var(--muted);font-size:11px;gap:4px;border:none;background:none}
+.ni .ic{font-size:22px}
+.ni.active{color:var(--blue)}
+.hero{background:linear-gradient(135deg,var(--blue) 60%,#003E7A);color:#fff;padding:20px}
+.hero-stats{display:flex;gap:10px;margin-top:14px}
+.sc{flex:1;background:rgba(255,255,255,.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px)}
+.sc .n{font-size:22px;font-weight:900}
+.sc .l{font-size:10px;opacity:.8;margin-top:2px}
+.prg{padding:14px 20px 8px}
+.prg-h{display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;font-weight:600}
+.prg-b{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.prg-f{height:100%;background:linear-gradient(90deg,var(--blue),#0080FF);border-radius:4px;transition:width .5s}
+.stitle{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:14px 20px 6px}
+.pcard{margin:0 16px 10px;background:#fff;border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden;cursor:pointer;transition:box-shadow .2s}
+.pcard:active{opacity:.85}
+.pcard.done{border-color:var(--ok);background:#F0FAF3}
+.pcard.prog{border-color:var(--warn)}
+.cbody{display:flex;padding:12px;gap:12px;align-items:flex-start}
+.rk{width:32px;height:32px;background:var(--blue);color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.rk.top{background:#E8700A}
+.ci{flex:1;min-width:0}
+.cname{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cartno{font-size:11px;color:var(--muted);margin-top:2px}
+.cprice{font-size:15px;font-weight:800;color:var(--blue);margin-top:4px}
+.badges{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 7px;border-radius:20px;font-weight:600}
+.b-top{background:#FFF3E0;color:#E67700}
+.b-run{background:#E8F4FD;color:var(--blue)}
+.b-news{background:#FFF0F0;color:var(--fail)}
+.b-done{background:#E8F5E9;color:var(--ok)}
+.b-prog{background:#FFF3CD;color:#856404}
+.sdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:10px}
+.d-ok{background:var(--ok)}.d-pr{background:var(--warn)}.d-no{background:var(--border)}
+.cfoot{background:var(--gray);padding:8px 12px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.issues{color:var(--fail);font-weight:600}
 
-  /* Status bar */
-  .status-bar {
-    background: var(--ikea-blue);
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 24px 6px;
-    font-size: 13px;
-    font-weight: 600;
-  }
+/* Detail */
+.dhero{background:var(--gray);padding:18px 20px;text-align:center;border-bottom:1px solid var(--border)}
+.dhero h2{font-size:17px;font-weight:800;margin:6px 0}
+.dhero .price{font-size:22px;font-weight:900;color:var(--blue)}
+.dhero .meta{font-size:12px;color:var(--muted);margin-top:3px}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 20px 14px}
+.photo-thumb{aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--border);position:relative;display:flex;align-items:center;justify-content:center;font-size:28px}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb .del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.upload-btn{margin:0 20px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:13px;font-size:14px;font-weight:700;width:calc(100% - 40px);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.upload-btn:active{opacity:.85}
+#cameraInput{display:none}
+.criteria-list{padding:0 20px 14px}
+.crit{border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.crit-hdr{display:flex;align-items:center;gap:10px;padding:12px}
+.crit-icon{font-size:20px;flex-shrink:0}
+.crit-info{flex:1}
+.crit-label{font-size:14px;font-weight:700}
+.crit-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.crit-btns{display:flex;gap:6px}
+.crit-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:var(--muted);transition:all .15s}
+.crit-btn.ok-sel{background:#E8F5E9;border-color:var(--ok);color:var(--ok)}
+.crit-btn.fail-sel{background:#FFEBEE;border-color:var(--fail);color:var(--fail)}
+.crit-note{padding:0 12px 12px}
+.crit-note textarea{width:100%;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;resize:none;background:var(--gray);font-family:inherit}
+.crit.ok-crit{border-color:var(--ok)}
+.crit.fail-crit{border-color:var(--fail)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:var(--r);font-size:15px;font-weight:700;border:none;cursor:pointer;width:100%}
+.btn:active{opacity:.85}
+.btn-prim{background:var(--blue);color:#fff}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-out{background:#fff;color:var(--blue);border:2px solid var(--blue)}
+.btn-sec{padding:0 20px 14px}
 
-  /* Header */
-  .header {
-    background: var(--ikea-blue);
-    color: white;
-    padding: 14px 20px 18px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .header-back {
-    font-size: 22px;
-    cursor: pointer;
-    padding: 4px;
-    opacity: 0.85;
-  }
-  .header-title { font-size: 18px; font-weight: 700; flex: 1; }
-  .header-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
-  .logo-badge {
-    background: var(--ikea-yellow);
-    color: var(--ikea-blue);
-    font-weight: 900;
-    font-size: 13px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    letter-spacing: 0.5px;
-  }
+/* Checklist */
+.cl-summary{padding:14px 20px;border-bottom:1px solid var(--border)}
+.cl-pills{display:flex;gap:8px}
+.pill{flex:1;text-align:center;padding:10px;border-radius:8px}
+.p-all{background:var(--gray);color:var(--text)}
+.p-done{background:#E8F5E9;color:var(--ok)}
+.p-pend{background:#FFF3CD;color:#856404}
+.pill .pn{font-size:22px;font-weight:800;display:block}
+.pill .pl{font-size:11px;font-weight:600}
+.cl-group{margin-bottom:2px}
+.cl-gtitle{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:10px 20px 4px;display:flex;align-items:center;gap:6px}
+.gbadge{background:var(--border);color:var(--muted);font-size:11px;padding:1px 6px;border-radius:10px}
+.chk-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid var(--gray);cursor:pointer}
+.chk-item:active{background:var(--gray)}
+.checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .2s}
+.checkbox.chked{background:var(--ok);border-color:var(--ok)}
+.checkbox.chked::after{content:'✓';color:#fff;font-size:14px;font-weight:700}
+.chk-content{flex:1}
+.chk-text{font-size:14px;color:var(--text);line-height:1.4}
+.chk-text.crossed{text-decoration:line-through;color:var(--muted)}
+.chk-meta{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap}
+.pri{font-size:11px;font-weight:600;padding:1px 6px;border-radius:10px}
+.pri-h{background:#FFEBEE;color:var(--fail)}
+.pri-m{background:#FFF3CD;color:#856404}
 
-  /* Screen management */
-  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
-  .screen.active { display: flex; }
+/* Team */
+.tm-card{margin:14px 16px;background:var(--gray);border-radius:var(--r);padding:14px}
+.member{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.act{display:flex;align-items:flex-start;gap:8px;padding:10px 16px;border-bottom:1px solid var(--gray)}
+.act-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);margin-top:6px;flex-shrink:0}
+.act-dot.w{background:var(--warn)}
 
-  /* Scrollable content */
-  .scroll-content {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 80px;
-  }
-  .scroll-content::-webkit-scrollbar { display: none; }
+/* Weekly */
+.wk-hero{background:linear-gradient(135deg,#003E7A,var(--blue));color:#fff;padding:20px}
+.wk-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.wk-sc{background:rgba(255,255,255,.15);border-radius:8px;padding:8px;text-align:center}
+.wk-sc .n{font-size:18px;font-weight:900}
+.wk-sc .l{font-size:10px;opacity:.8;margin-top:1px}
+.cat-card{margin:0 16px 10px;background:#fff;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cat-hdr{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer}
+.cat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.cat-body{background:var(--gray);padding:12px 14px;display:none}
+.cat-body.open{display:block}
+.focus-card{background:#fff;border-radius:var(--r);padding:14px;border-left:4px solid var(--fail);box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:10px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.divider{height:8px;background:var(--gray)}
+.empty{padding:24px;text-align:center;color:var(--muted);font-size:14px}
 
-  /* Bottom nav */
-  .bottom-nav {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    border-top: 1px solid var(--ikea-border);
-    display: flex;
-    z-index: 100;
-  }
-  .nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 4px 14px;
-    cursor: pointer;
-    color: var(--ikea-muted);
-    font-size: 11px;
-    gap: 4px;
-    transition: color 0.2s;
-    border: none;
-    background: none;
-  }
-  .nav-item .icon { font-size: 22px; }
-  .nav-item.active { color: var(--ikea-blue); }
-  .nav-item.active .icon { transform: scale(1.1); }
-
-  /* Hero section */
-  .hero {
-    background: linear-gradient(135deg, var(--ikea-blue) 60%, #003E7A);
-    color: white;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::after {
-    content: '';
-    position: absolute;
-    top: -30px; right: -30px;
-    width: 150px; height: 150px;
-    background: var(--ikea-yellow);
-    border-radius: 50%;
-    opacity: 0.1;
-  }
-  .hero-date { font-size: 13px; opacity: 0.75; margin-bottom: 4px; }
-  .hero-title { font-size: 22px; font-weight: 800; }
-  .hero-subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
-  .hero-stats {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-  }
-  .stat-card {
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-    padding: 10px 16px;
-    text-align: center;
-    flex: 1;
-    backdrop-filter: blur(4px);
-  }
-  .stat-num { font-size: 24px; font-weight: 800; }
-  .stat-label { font-size: 11px; opacity: 0.8; margin-top: 2px; }
-
-  /* Progress bar */
-  .progress-section { padding: 16px 20px 8px; }
-  .progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .progress-label { font-size: 13px; font-weight: 600; color: var(--ikea-text); }
-  .progress-pct { font-size: 13px; font-weight: 700; color: var(--ikea-blue); }
-  .progress-bar {
-    height: 8px;
-    background: var(--ikea-border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--ikea-blue), #0080FF);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-  }
-
-  /* Section title */
-  .section-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ikea-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    padding: 16px 20px 8px;
-  }
-
-  /* Product card */
-  .product-card {
-    margin: 0 16px 10px;
-    background: white;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--ikea-border);
-    overflow: hidden;
-    cursor: pointer;
-    transition: box-shadow 0.2s, transform 0.1s;
-  }
-  .product-card:active { transform: scale(0.98); }
-  .product-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-  .product-card.completed { border-color: var(--ok); background: #F0FAF3; }
-  .product-card.in-progress { border-color: var(--warn); }
-
-  .card-body { display: flex; padding: 12px; gap: 12px; align-items: flex-start; }
-  .card-rank {
-    width: 32px; height: 32px;
-    background: var(--ikea-blue);
-    color: white;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 14px;
-    flex-shrink: 0;
-  }
-  .card-rank.top { background: #E8700A; }
-  .card-info { flex: 1; min-width: 0; }
-  .card-name { font-size: 14px; font-weight: 700; color: var(--ikea-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card-artno { font-size: 12px; color: var(--ikea-muted); margin-top: 2px; }
-  .card-price { font-size: 15px; font-weight: 800; color: var(--ikea-blue); margin-top: 4px; }
-  .card-badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-  .badge {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 600;
-  }
-  .badge-top { background: #FFF3E0; color: #E67700; }
-  .badge-running { background: #E8F4FD; color: var(--ikea-blue); }
-  .badge-news { background: #FFF0F0; color: var(--fail); }
-  .badge-done { background: #E8F5E9; color: var(--ok); }
-  .badge-warn { background: #FFF3CD; color: #856404; }
-  .card-status {
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    font-weight: 600;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-  .status-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-  .dot-done { background: var(--ok); }
-  .dot-progress { background: var(--warn); }
-  .dot-pending { background: var(--ikea-border); }
-
-  .card-footer {
-    background: var(--ikea-gray);
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 12px;
-    color: var(--ikea-muted);
-  }
-  .issues-count {
-    display: flex; align-items: center; gap: 4px;
-    color: var(--fail);
-    font-weight: 600;
-  }
-
-  /* ---- Product Detail Screen ---- */
-  .detail-hero {
-    background: var(--ikea-gray);
-    padding: 20px;
-    text-align: center;
-    border-bottom: 1px solid var(--ikea-border);
-  }
-  .detail-artno { font-size: 12px; color: var(--ikea-muted); }
-  .detail-name { font-size: 18px; font-weight: 800; margin: 6px 0; }
-  .detail-price { font-size: 22px; font-weight: 900; color: var(--ikea-blue); }
-  .detail-meta { font-size: 13px; color: var(--ikea-muted); margin-top: 4px; }
-
-  /* Criteria list */
-  .criteria-section { padding: 16px 20px; }
-  .criteria-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
-  .criteria-item {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    border: 1.5px solid var(--ikea-border);
-    background: white;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .criteria-item.ok { border-color: var(--ok); background: #F0FAF3; }
-  .criteria-item.fail { border-color: var(--fail); background: #FFF5F5; }
-  .criteria-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
-  .criteria-text { flex: 1; }
-  .criteria-label { font-size: 14px; font-weight: 600; }
-  .criteria-sub { font-size: 12px; color: var(--ikea-muted); margin-top: 3px; }
-  .criteria-result {
-    font-size: 13px;
-    font-weight: 700;
-    flex-shrink: 0;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-  .result-ok { background: #E8F5E9; color: var(--ok); }
-  .result-fail { background: #FFEBEE; color: var(--fail); }
-  .result-pending { background: var(--ikea-gray); color: var(--ikea-muted); }
-
-  /* Photo upload area */
-  .upload-area {
-    margin: 0 20px 16px;
-    border: 2px dashed var(--ikea-border);
-    border-radius: var(--radius);
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    background: var(--ikea-gray);
-  }
-  .upload-area:hover { border-color: var(--ikea-blue); }
-  .upload-icon { font-size: 36px; margin-bottom: 8px; }
-  .upload-text { font-size: 14px; font-weight: 600; color: var(--ikea-blue); }
-  .upload-sub { font-size: 12px; color: var(--ikea-muted); margin-top: 4px; }
-  .photos-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin: 0 20px 16px;
-  }
-  .photo-thumb {
-    aspect-ratio: 1;
-    border-radius: 8px;
-    object-fit: cover;
-    background: var(--ikea-border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-label {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background: rgba(0,0,0,0.55);
-    color: white;
-    font-size: 10px;
-    text-align: center;
-    padding: 3px;
-  }
-
-  /* AI Analysis */
-  .ai-section {
-    margin: 0 20px 16px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1.5px solid var(--ikea-blue);
-  }
-  .ai-header {
-    background: var(--ikea-blue);
-    color: white;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .ai-body { padding: 14px 16px; }
-  .ai-score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .ai-score {
-    font-size: 36px;
-    font-weight: 900;
-    color: var(--warn);
-  }
-  .ai-score-info { flex: 1; }
-  .ai-score-label { font-size: 13px; color: var(--ikea-muted); }
-  .ai-score-bar { height: 6px; background: var(--ikea-border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
-  .ai-score-fill { height: 100%; border-radius: 3px; background: var(--warn); width: 60%; }
-  .ai-issues { display: flex; flex-direction: column; gap: 8px; }
-  .ai-issue {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: 10px;
-    background: #FFF9F0;
-    border-radius: 8px;
-    border-left: 3px solid var(--warn);
-  }
-  .ai-issue-icon { font-size: 16px; flex-shrink: 0; }
-  .ai-issue-text { font-size: 13px; line-height: 1.5; }
-  .ai-issue-tag {
-    font-size: 11px;
-    background: #FFE8C0;
-    color: #8B5000;
-    padding: 1px 6px;
-    border-radius: 10px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: inline-block;
-  }
-
-  /* ---- Checklist Screen ---- */
-  .checklist-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--ikea-border);
-  }
-  .checklist-summary {
-    display: flex;
-    gap: 10px;
-  }
-  .summary-pill {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: 700;
-  }
-  .pill-total { background: var(--ikea-gray); color: var(--ikea-text); }
-  .pill-done { background: #E8F5E9; color: var(--ok); }
-  .pill-pending { background: #FFF3CD; color: #856404; }
-  .summary-pill .num { font-size: 22px; display: block; }
-  .summary-pill .lbl { font-size: 11px; font-weight: 600; }
-
-  .checklist-group { margin-bottom: 4px; }
-  .group-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px 6px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ikea-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .group-badge {
-    background: var(--ikea-border);
-    color: var(--ikea-muted);
-    font-size: 11px;
-    padding: 1px 6px;
-    border-radius: 10px;
-  }
-
-  .check-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 20px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--ikea-gray);
-    transition: background 0.15s;
-  }
-  .check-item:active { background: var(--ikea-gray); }
-  .checkbox {
-    width: 22px; height: 22px;
-    border-radius: 6px;
-    border: 2px solid var(--ikea-border);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-    transition: all 0.2s;
-  }
-  .checkbox.checked {
-    background: var(--ok);
-    border-color: var(--ok);
-  }
-  .checkbox.checked::after {
-    content: '✓';
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-  }
-  .check-content { flex: 1; }
-  .check-text { font-size: 14px; color: var(--ikea-text); line-height: 1.4; }
-  .check-text.done { text-decoration: line-through; color: var(--ikea-muted); }
-  .check-meta { font-size: 12px; color: var(--ikea-muted); margin-top: 4px; display: flex; gap: 8px; }
-  .check-priority {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 1px 6px;
-    border-radius: 10px;
-  }
-  .priority-high { background: #FFEBEE; color: var(--fail); }
-  .priority-med { background: #FFF3CD; color: #856404; }
-
-  /* ---- Team Screen ---- */
-  .team-overview {
-    margin: 16px;
-    background: var(--ikea-gray);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .team-overview-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
-  .ring-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .ring-chart {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    background: conic-gradient(var(--ok) 0% 40%, var(--warn) 40% 70%, var(--ikea-border) 70% 100%);
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    flex-shrink: 0;
-  }
-  .ring-inner {
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: white;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 800;
-  }
-  .ring-inner span { font-size: 10px; font-weight: 600; color: var(--ikea-muted); }
-  .ring-legend { flex: 1; }
-  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-
-  .team-member {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--ikea-border);
-  }
-  .avatar {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; color: white;
-    flex-shrink: 0;
-  }
-  .member-info { flex: 1; }
-  .member-name { font-size: 14px; font-weight: 700; }
-  .member-status { font-size: 12px; color: var(--ikea-muted); margin-top: 2px; }
-  .member-progress { text-align: right; }
-  .member-pct { font-size: 16px; font-weight: 800; color: var(--ikea-blue); }
-  .member-tasks { font-size: 11px; color: var(--ikea-muted); }
-
-  .activity-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--ikea-gray);
-  }
-  .activity-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--ok);
-    margin-top: 6px;
-    flex-shrink: 0;
-  }
-  .activity-dot.warn { background: var(--warn); }
-  .activity-text { font-size: 13px; color: var(--ikea-text); line-height: 1.4; }
-  .activity-time { font-size: 11px; color: var(--ikea-muted); margin-top: 2px; }
-
-  /* Buttons */
-  .btn {
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px;
-    padding: 14px 20px;
-    border-radius: var(--radius);
-    font-size: 15px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    width: 100%;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--ikea-blue); color: white; }
-  .btn-yellow { background: var(--ikea-yellow); color: var(--ikea-blue); }
-  .btn-outline { background: white; color: var(--ikea-blue); border: 2px solid var(--ikea-blue); }
-  .btn-success { background: var(--ok); color: white; }
-  .btn-section { padding: 0 20px 16px; }
-
-  /* Notification banner */
-  .notif-banner {
-    background: var(--ikea-yellow);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ikea-dark);
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--ikea-dark);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-    z-index: 999;
-    white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* Chip tabs */
-  .tabs {
-    display: flex;
-    gap: 8px;
-    padding: 12px 20px;
-    overflow-x: auto;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 2px solid var(--ikea-border);
-    background: white;
-    color: var(--ikea-muted);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-  }
-  .tab.active { background: var(--ikea-blue); border-color: var(--ikea-blue); color: white; }
-
-  /* Score gauge */
-  .score-summary {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    margin: 0 20px 16px;
-  }
-  .score-col {
-    display: flex; flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-  .score-icon { font-size: 18px; }
-  .score-circle {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 800;
-  }
-  .score-ok { background: #E8F5E9; color: var(--ok); }
-  .score-fail { background: #FFEBEE; color: var(--fail); }
-  .score-label { font-size: 10px; color: var(--ikea-muted); text-align: center; line-height: 1.3; }
-
-  .divider { height: 8px; background: var(--ikea-gray); }
+/* share panel */
+.panel{background:#fff;border-top:1px solid var(--border);padding:16px 20px;display:none}
+.panel.open{display:block}
 </style>
 </head>
 <body>
-
 <div class="phone" id="app">
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
-  <!-- ============ SCREEN: HOME ============ -->
-  <div class="screen active" id="screen-home">
-    <div class="status-bar">
-      <span>9:30</span>
-      <span><span class="logo-badge">IKEA</span></span>
-      <span>⚡ 85%</span>
-    </div>
-    <div class="header">
-      <div>
-        <div class="header-title">Test Buy</div>
-        <div class="header-sub">今日任务 · HFB01 起居家具</div>
+<!-- ====== HOME ====== -->
+<div class="screen active" id="s-home">
+  <div class="sbar"><span id="time-home">--:--</span><span><span class="logo">IKEA</span></span><span>HFB01</span></div>
+  <div class="hdr"><div><h1>Test Buy</h1><p id="home-date">今日任务</p></div></div>
+  <div class="scroll" id="home-scroll">
+    <div class="hero">
+      <div style="font-size:12px;opacity:.7;margin-bottom:4px" id="hero-week"></div>
+      <div style="font-size:20px;font-weight:800">今日 Test Buy</div>
+      <div style="font-size:13px;opacity:.85;margin-top:3px">5个Top产品 + 5个其他产品</div>
+      <div class="hero-stats">
+        <div class="sc"><div class="n" id="stat-done">0</div><div class="l">已完成</div></div>
+        <div class="sc"><div class="n" id="stat-prog">0</div><div class="l">进行中</div></div>
+        <div class="sc"><div class="n" id="stat-pend">10</div><div class="l">待开始</div></div>
       </div>
     </div>
-
-    <div class="scroll-content">
-      <div class="notif-banner">
-        🔔 今日10个产品已自动选出，请开始 Test Buy！
-      </div>
-
-      <div class="hero">
-        <div class="hero-date">2026年5月18日 · 星期一</div>
-        <div class="hero-title">今日 Test Buy</div>
-        <div class="hero-subtitle">包含 5 个 Top 产品 · 系统自动选取</div>
-        <div class="hero-stats">
-          <div class="stat-card">
-            <div class="stat-num">3</div>
-            <div class="stat-label">已完成</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num">2</div>
-            <div class="stat-label">进行中</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num">5</div>
-            <div class="stat-label">待开始</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="progress-section">
-        <div class="progress-header">
-          <span class="progress-label">今日整体进度</span>
-          <span class="progress-pct">30%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
-      </div>
-
-      <div class="tabs">
-        <div class="tab active">全部 (10)</div>
-        <div class="tab">待开始 (5)</div>
-        <div class="tab">进行中 (2)</div>
-        <div class="tab">已完成 (3)</div>
-      </div>
-
-      <div class="section-title">⭐ Top 产品优先</div>
-
-      <!-- Product 1 - TOP, completed -->
-      <div class="product-card completed" onclick="openDetail(0)">
-        <div class="card-body">
-          <div class="card-rank top">1</div>
-          <div class="card-info">
-            <div class="card-name">RULLERUM 鲁勒鲁姆 N 双人沙发</div>
-            <div class="card-artno">Art# 10594232</div>
-            <div class="card-price">¥5,999</div>
-            <div class="card-badges">
-              <span class="badge badge-top">⭐ Top产品</span>
-              <span class="badge badge-running">Running</span>
-              <span class="badge badge-done">✓ 已完成</span>
-            </div>
-          </div>
-          <div class="card-status">
-            <div class="status-dot dot-done"></div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span>评分：60/100</span>
-          <span class="issues-count">⚠ 3 项问题</span>
-        </div>
-      </div>
-
-      <!-- Product 2 - TOP, in progress -->
-      <div class="product-card in-progress" onclick="openDetail(1)">
-        <div class="card-body">
-          <div class="card-rank top">2</div>
-          <div class="card-info">
-            <div class="card-name">KIVIK 奇维 N 三人沙发框架</div>
-            <div class="card-artno">Art# 10519365</div>
-            <div class="card-price">¥1,700</div>
-            <div class="card-badges">
-              <span class="badge badge-top">⭐ Top产品</span>
-              <span class="badge badge-running">Running</span>
-              <span class="badge badge-warn">📷 上传中</span>
-            </div>
-          </div>
-          <div class="card-status">
-            <div class="status-dot dot-progress"></div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span>已上传 2 张照片</span>
-          <span>等待AI分析…</span>
-        </div>
-      </div>
-
-      <!-- Product 3 - TOP, completed -->
-      <div class="product-card completed" onclick="openDetail(2)">
-        <div class="card-body">
-          <div class="card-rank top">3</div>
-          <div class="card-info">
-            <div class="card-name">HAVBERG 哈伯格 转椅</div>
-            <div class="card-artno">Art# 70531656</div>
-            <div class="card-price">¥2,499</div>
-            <div class="card-badges">
-              <span class="badge badge-top">⭐ Top产品</span>
-              <span class="badge badge-running">Running</span>
-              <span class="badge badge-done">✓ 已完成</span>
-            </div>
-          </div>
-          <div class="card-status">
-            <div class="status-dot dot-done"></div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span>评分：85/100</span>
-          <span style="color:var(--ok); font-weight:600;">✓ 1 项问题</span>
-        </div>
-      </div>
-
-      <!-- Product 4 - TOP, in progress -->
-      <div class="product-card in-progress" onclick="openDetail(3)">
-        <div class="card-body">
-          <div class="card-rank top">4</div>
-          <div class="card-info">
-            <div class="card-name">SÖDERHAMN 索德汉 3人座框架</div>
-            <div class="card-artno">Art# 20223919</div>
-            <div class="card-price">¥2,299</div>
-            <div class="card-badges">
-              <span class="badge badge-top">⭐ Top产品</span>
-              <span class="badge badge-running">Running</span>
-              <span class="badge badge-warn">📷 1张照片</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-progress"></div></div>
-        </div>
-      </div>
-
-      <!-- Product 5 - TOP, completed -->
-      <div class="product-card completed" onclick="openDetail(4)">
-        <div class="card-body">
-          <div class="card-rank top">5</div>
-          <div class="card-info">
-            <div class="card-name">BORGEBY 伯格比 茶几 70</div>
-            <div class="card-artno">Art# 10500356</div>
-            <div class="card-price">¥599</div>
-            <div class="card-badges">
-              <span class="badge badge-top">⭐ Top产品</span>
-              <span class="badge badge-running">Running</span>
-              <span class="badge badge-done">✓ 已完成</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-done"></div></div>
-        </div>
-        <div class="card-footer">
-          <span>评分：90/100</span>
-          <span style="color:var(--ok); font-weight:600;">✓ 无问题</span>
-        </div>
-      </div>
-
-      <div class="section-title">📦 其他产品</div>
-
-      <div class="product-card" onclick="openDetail(5)">
-        <div class="card-body">
-          <div class="card-rank">6</div>
-          <div class="card-info">
-            <div class="card-name">LANDSKRONA 兰德克纳 三人沙发</div>
-            <div class="card-artno">Art# 10413415</div>
-            <div class="card-price">¥3,299</div>
-            <div class="card-badges">
-              <span class="badge badge-running">Running</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-pending"></div></div>
-        </div>
-      </div>
-
-      <div class="product-card" onclick="openDetail(6)">
-        <div class="card-body">
-          <div class="card-rank">7</div>
-          <div class="card-info">
-            <div class="card-name">VIMLE 维姆勒 三人沙发框架</div>
-            <div class="card-artno">Art# 90488794</div>
-            <div class="card-price">¥2,199</div>
-            <div class="card-badges">
-              <span class="badge badge-running">Running</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-pending"></div></div>
-        </div>
-      </div>
-
-      <div class="product-card" onclick="openDetail(7)">
-        <div class="card-body">
-          <div class="card-rank">8</div>
-          <div class="card-info">
-            <div class="card-name">POÄNG 波昂 N 扶手椅垫</div>
-            <div class="card-artno">Art# 50550858</div>
-            <div class="card-price">¥299</div>
-            <div class="card-badges">
-              <span class="badge badge-running">Running</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-pending"></div></div>
-        </div>
-      </div>
-
-      <div class="product-card" onclick="openDetail(8)">
-        <div class="card-body">
-          <div class="card-rank">9</div>
-          <div class="card-info">
-            <div class="card-name">FRIHETEN 弗瑞顿 3人沙发床</div>
-            <div class="card-artno">Art# 40551226</div>
-            <div class="card-price">¥3,999</div>
-            <div class="card-badges">
-              <span class="badge badge-running">Running</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-pending"></div></div>
-        </div>
-      </div>
-
-      <div class="product-card" onclick="openDetail(9)">
-        <div class="card-body">
-          <div class="card-rank">10</div>
-          <div class="card-info">
-            <div class="card-name">JÄTTEBO 耶特博 1.5人座储物</div>
-            <div class="card-artno">Art# 50528914</div>
-            <div class="card-price">¥1,799</div>
-            <div class="card-badges">
-              <span class="badge badge-running">Running</span>
-            </div>
-          </div>
-          <div class="card-status"><div class="status-dot dot-pending"></div></div>
-        </div>
-      </div>
+    <div class="prg">
+      <div class="prg-h"><span>今日整体进度</span><span id="prg-pct" style="color:var(--blue)">0%</span></div>
+      <div class="prg-b"><div class="prg-f" id="prg-fill" style="width:0%"></div></div>
     </div>
-
-    <!-- Bottom Nav -->
-    <div class="bottom-nav">
-      <button class="nav-item active" onclick="showScreen('home')">
-        <span class="icon">🏠</span>今日任务
-      </button>
-      <button class="nav-item" onclick="showScreen('checklist')">
-        <span class="icon">✅</span>改进清单
-      </button>
-      <button class="nav-item" onclick="showScreen('team')">
-        <span class="icon">👥</span>团队进展
-      </button>
-      <button class="nav-item" onclick="showScreen('weekly')">
-        <span class="icon">📊</span>周报
-      </button>
-    </div>
+    <div class="stitle">⭐ Top 产品（5个）</div>
+    <div id="list-top"></div>
+    <div class="stitle">📦 其他产品（5个）</div>
+    <div id="list-other"></div>
   </div>
-
-
-  <!-- ============ SCREEN: PRODUCT DETAIL ============ -->
-  <div class="screen" id="screen-detail">
-    <div class="status-bar">
-      <span>9:47</span>
-      <span><span class="logo-badge">IKEA</span></span>
-      <span>⚡ 85%</span>
-    </div>
-    <div class="header">
-      <div class="header-back" onclick="showScreen('home')">←</div>
-      <div>
-        <div class="header-title">产品 Test Buy</div>
-        <div class="header-sub">第 1 / 10 个产品</div>
-      </div>
-    </div>
-
-    <div class="scroll-content">
-      <div class="detail-hero">
-        <div class="detail-artno">Art# 10594232 · HFB01 · PA 111</div>
-        <div class="detail-name">RULLERUM 鲁勒鲁姆 N 双人沙发电动躺椅</div>
-        <div class="detail-price">¥5,999</div>
-        <div class="detail-meta">哥兰/邦斯塔金棕 · Running · ⭐ Top产品</div>
-      </div>
-
-      <!-- Score overview -->
-      <div class="section-title">📊 评估结果概览</div>
-      <div class="score-summary">
-        <div class="score-col">
-          <div class="score-icon">👁</div>
-          <div class="score-circle score-ok">✓</div>
-          <div class="score-label">产品<br>已陈列</div>
-        </div>
-        <div class="score-col">
-          <div class="score-icon">✨</div>
-          <div class="score-circle score-fail">✗</div>
-          <div class="score-label">状态<br>完好</div>
-        </div>
-        <div class="score-col">
-          <div class="score-icon">🏷</div>
-          <div class="score-circle score-fail">✗</div>
-          <div class="score-label">价格<br>信息</div>
-        </div>
-        <div class="score-col">
-          <div class="score-icon">🛒</div>
-          <div class="score-circle score-ok">✓</div>
-          <div class="score-label">购买<br>引导</div>
-        </div>
-        <div class="score-col">
-          <div class="score-icon">📦</div>
-          <div class="score-circle score-fail">✗</div>
-          <div class="score-label">产品<br>可购买</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Photo upload -->
-      <div class="section-title">📷 上传现场照片</div>
-      <div class="photos-grid">
-        <div class="photo-thumb" style="background:#E3F2FD">
-          <span>🛋</span>
-          <div class="photo-label">整体陈列</div>
-        </div>
-        <div class="photo-thumb" style="background:#FFF3E0">
-          <span>🏷</span>
-          <div class="photo-label">价格标签</div>
-        </div>
-        <div class="photo-thumb" style="background:#F3E5F5">
-          <span>📦</span>
-          <div class="photo-label">取货区域</div>
-        </div>
-      </div>
-      <div class="upload-area" onclick="showToast('📷 正在打开相机…')">
-        <div class="upload-icon">📷</div>
-        <div class="upload-text">拍照上传</div>
-        <div class="upload-sub">建议拍摄：陈列全景、价格标签、产品细节、取货位置</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- AI Analysis -->
-      <div class="section-title">🤖 AI 分析结果</div>
-      <div class="ai-section">
-        <div class="ai-header">🤖 AI 评估 — 基于 Merchandising Basics</div>
-        <div class="ai-body">
-          <div class="ai-score-row">
-            <div class="ai-score">60</div>
-            <div class="ai-score-info">
-              <div class="ai-score-label">综合评分（满分100）</div>
-              <div class="ai-score-bar">
-                <div class="ai-score-fill" style="width:60%; background:var(--warn)"></div>
-              </div>
-              <div style="font-size:12px; color:var(--ikea-muted); margin-top:4px">发现 3 项问题 · 需要改进</div>
-            </div>
-          </div>
-          <div class="ai-issues">
-            <div class="ai-issue">
-              <div class="ai-issue-icon">✨</div>
-              <div>
-                <div class="ai-issue-tag">产品状态</div>
-                <div class="ai-issue-text">坐垫右侧有明显污迹，靠背摆放不整齐，未达到「始终完好如新」标准</div>
-              </div>
-            </div>
-            <div class="ai-issue">
-              <div class="ai-issue-icon">🏷</div>
-              <div>
-                <div class="ai-issue-tag">价格标签</div>
-                <div class="ai-issue-text">价格标签被遮挡，材质保养信息不完整，缺少尺寸标注（宽×深×高）</div>
-              </div>
-            </div>
-            <div class="ai-issue">
-              <div class="ai-issue-icon">📦</div>
-              <div>
-                <div class="ai-issue-tag">库存可用性</div>
-                <div class="ai-issue-text">自助取货区库存显示为0，未提供可订货/送货的替代说明</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Criteria detail -->
-      <div class="criteria-section">
-        <div class="criteria-title">5大评估维度详情</div>
-
-        <div class="criteria-item ok">
-          <div class="criteria-icon">👁</div>
-          <div class="criteria-text">
-            <div class="criteria-label">1. 产品是否已陈列？</div>
-            <div class="criteria-sub">产品在正确展示区，客户可见并可体验</div>
-          </div>
-          <span class="criteria-result result-ok">OK</span>
-        </div>
-
-        <div class="criteria-item fail" onclick="showToast('点击查看详情')">
-          <div class="criteria-icon">✨</div>
-          <div class="criteria-text">
-            <div class="criteria-label">2. 产品状态是否完好？</div>
-            <div class="criteria-sub">清洁·正确组装·符合安全标准</div>
-          </div>
-          <span class="criteria-result result-fail">需改进</span>
-        </div>
-
-        <div class="criteria-item fail">
-          <div class="criteria-icon">🏷</div>
-          <div class="criteria-text">
-            <div class="criteria-label">3. 价格与产品信息是否清晰？</div>
-            <div class="criteria-sub">名称·价格·尺寸·材质·客户利益·保养说明</div>
-          </div>
-          <span class="criteria-result result-fail">需改进</span>
-        </div>
-
-        <div class="criteria-item ok">
-          <div class="criteria-icon">🛒</div>
-          <div class="criteria-text">
-            <div class="criteria-label">4. 购买引导是否清晰？</div>
-            <div class="criteria-sub">取货位置·购买方式·QR码有效</div>
-          </div>
-          <span class="criteria-result result-ok">OK</span>
-        </div>
-
-        <div class="criteria-item fail">
-          <div class="criteria-icon">📦</div>
-          <div class="criteria-text">
-            <div class="criteria-label">5. 产品是否可购买？</div>
-            <div class="criteria-sub">现货取走 / 可订购说明清晰</div>
-          </div>
-          <span class="criteria-result result-fail">需改进</span>
-        </div>
-      </div>
-
-      <div class="btn-section">
-        <button class="btn btn-primary" onclick="showToast('✅ 已添加到改进清单')">
-          ➕ 将改进项加入清单
-        </button>
-      </div>
-    </div>
-
-    <div class="bottom-nav">
-      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
-      <button class="nav-item" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
-      <button class="nav-item" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
-      <button class="nav-item" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
-    </div>
+  <div class="bnav">
+    <button class="ni active" onclick="nav('home')"><span class="ic">🏠</span>今日任务</button>
+    <button class="ni" onclick="nav('checklist')"><span class="ic">✅</span>改进清单</button>
+    <button class="ni" onclick="nav('team')"><span class="ic">👥</span>团队</button>
+    <button class="ni" onclick="nav('weekly')"><span class="ic">📊</span>周报</button>
   </div>
-
-
-  <!-- ============ SCREEN: CHECKLIST ============ -->
-  <div class="screen" id="screen-checklist">
-    <div class="status-bar">
-      <span>10:15</span>
-      <span><span class="logo-badge">IKEA</span></span>
-      <span>⚡ 85%</span>
-    </div>
-    <div class="header">
-      <div>
-        <div class="header-title">改进清单</div>
-        <div class="header-sub">2026年5月18日 · 10个产品</div>
-      </div>
-    </div>
-
-    <div class="scroll-content">
-      <div class="checklist-header">
-        <div class="checklist-summary">
-          <div class="summary-pill pill-total">
-            <span class="num">12</span>
-            <span class="lbl">全部问题</span>
-          </div>
-          <div class="summary-pill pill-done">
-            <span class="num">4</span>
-            <span class="lbl">已解决</span>
-          </div>
-          <div class="summary-pill pill-pending">
-            <span class="num">8</span>
-            <span class="lbl">待处理</span>
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="progress-bar" style="height:10px">
-            <div class="progress-fill" style="width:33%; background:var(--ok)"></div>
-          </div>
-          <div style="font-size:12px; color:var(--ikea-muted); margin-top:6px; text-align:right">完成率 33%</div>
-        </div>
-      </div>
-
-      <!-- Group 1 -->
-      <div class="checklist-group">
-        <div class="group-title">🛋 RULLERUM 鲁勒鲁姆 <span class="group-badge">3项</span></div>
-
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox"></div>
-          <div class="check-content">
-            <div class="check-text">清洁坐垫右侧污迹，整理靠背摆放</div>
-            <div class="check-meta">
-              <span class="check-priority priority-high">高优先级</span>
-              <span>产品状态</span>
-            </div>
-          </div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox"></div>
-          <div class="check-content">
-            <div class="check-text">重新放置价格标签确保可见，补充尺寸标注（宽140×深90×高83cm）</div>
-            <div class="check-meta">
-              <span class="check-priority priority-high">高优先级</span>
-              <span>价格信息</span>
-            </div>
-          </div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox checked"></div>
-          <div class="check-content">
-            <div class="check-text done">补充自助取货区库存，或添加可订货说明牌</div>
-            <div class="check-meta">
-              <span class="check-priority priority-high">高优先级</span>
-              <span>库存可用性</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Group 2 -->
-      <div class="checklist-group">
-        <div class="group-title">🪑 HAVBERG 哈伯格转椅 <span class="group-badge">1项</span></div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox checked"></div>
-          <div class="check-content">
-            <div class="check-text done">补充材质保养说明标签（皮革护理信息）</div>
-            <div class="check-meta">
-              <span class="check-priority priority-med">中优先级</span>
-              <span>价格信息</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Group 3 -->
-      <div class="checklist-group">
-        <div class="group-title">🛋 KIVIK 奇维三人沙发 <span class="group-badge">2项</span></div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox"></div>
-          <div class="check-content">
-            <div class="check-text">组装检查：扶手连接螺丝未拧紧，存在安全隐患</div>
-            <div class="check-meta">
-              <span class="check-priority priority-high">高优先级</span>
-              <span>产品状态</span>
-            </div>
-          </div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox"></div>
-          <div class="check-content">
-            <div class="check-text">展示区增加颜色/面料选择说明（当前仅展示一种）</div>
-            <div class="check-meta">
-              <span class="check-priority priority-med">中优先级</span>
-              <span>产品陈列</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Group 4 -->
-      <div class="checklist-group">
-        <div class="group-title">☕ BORGEBY 伯格比茶几 <span class="group-badge">0项</span></div>
-        <div style="padding:12px 20px; font-size:13px; color:var(--ok); font-weight:600">✅ 无需改进，状态优秀！</div>
-      </div>
-
-      <!-- Group 5 -->
-      <div class="checklist-group">
-        <div class="group-title">🛋 SÖDERHAMN 索德汉 <span class="group-badge">2项</span></div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox checked"></div>
-          <div class="check-content">
-            <div class="check-text done">清洁展示面料，去除灰尘和毛球</div>
-            <div class="check-meta">
-              <span class="check-priority priority-med">中优先级</span>
-              <span>产品状态</span>
-            </div>
-          </div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="checkbox"></div>
-          <div class="check-content">
-            <div class="check-text">价格标签脱落，需重新悬挂并确认价格准确</div>
-            <div class="check-meta">
-              <span class="check-priority priority-high">高优先级</span>
-              <span>价格信息</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Remaining products placeholder -->
-      <div style="padding:12px 20px; font-size:13px; color:var(--ikea-muted); text-align:center; background: var(--ikea-gray); margin:0 16px 16px; border-radius:8px;">
-        其余 5 个产品 Test Buy 完成后将自动生成改进项
-      </div>
-
-      <div class="btn-section">
-        <button class="btn btn-success" onclick="showToast('📤 改进报告已导出')">
-          📤 导出今日改进报告
-        </button>
-      </div>
-    </div>
-
-    <div class="bottom-nav">
-      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
-      <button class="nav-item active" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
-      <button class="nav-item" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
-      <button class="nav-item" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
-    </div>
-  </div>
-
-
-  <!-- ============ SCREEN: WEEKLY ============ -->
-  <div class="screen" id="screen-weekly">
-    <div class="status-bar">
-      <span>10:30</span>
-      <span><span class="logo-badge">IKEA</span></span>
-      <span>⚡ 85%</span>
-    </div>
-    <div class="header">
-      <div>
-        <div class="header-title">本周总结报告</div>
-        <div class="header-sub">W21 · 2026.05.12 — 05.18 · HFB01</div>
-      </div>
-    </div>
-
-    <div class="scroll-content">
-
-      <!-- Week hero card -->
-      <div style="background:linear-gradient(135deg,#003E7A,var(--ikea-blue));color:white;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:var(--ikea-yellow);border-radius:50%;opacity:0.12;"></div>
-        <div style="font-size:12px;opacity:0.7;margin-bottom:4px;">第 21 周 · 自动生成</div>
-        <div style="font-size:20px;font-weight:800;">Test Buy 周报</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px;">
-          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
-            <div style="font-size:22px;font-weight:900;">50</div>
-            <div style="font-size:10px;opacity:0.8;margin-top:2px;">测试产品</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
-            <div style="font-size:22px;font-weight:900;">38</div>
-            <div style="font-size:10px;opacity:0.8;margin-top:2px;">发现问题</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
-            <div style="font-size:22px;font-weight:900;color:var(--ikea-yellow);">71%</div>
-            <div style="font-size:10px;opacity:0.8;margin-top:2px;">问题解决率</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
-            <div style="font-size:22px;font-weight:900;">72</div>
-            <div style="font-size:10px;opacity:0.8;margin-top:2px;">平均评分</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- AI summary -->
-      <div style="margin:16px;border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--ikea-blue);">
-        <div style="background:var(--ikea-blue);color:white;padding:10px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;">
-          🤖 AI 周报摘要
-        </div>
-        <div style="padding:14px 16px;background:#F0F5FF;font-size:13px;line-height:1.7;color:var(--ikea-text);">
-          本周共完成 <strong>50 个产品</strong> Test Buy，平均评分 <strong>72/100</strong>，较上周提升 <strong>+5分</strong>。<br><br>
-          最突出问题集中在 <strong style="color:var(--fail)">价格标签缺失/遮挡</strong>（占所有问题的 37%）和 <strong style="color:var(--warn)">产品清洁度不达标</strong>（29%），两类问题合计占比 <strong>66%</strong>，建议本周重点突破。<br><br>
-          <strong>Top 产品</strong>整体表现优于普通产品（均分 78 vs 68）。BORGEBY 茶几系列连续两周满分 🏆
-        </div>
-      </div>
-
-      <!-- Issue category breakdown -->
-      <div class="section-title">🔍 问题分类分析</div>
-      <div style="margin:0 16px 16px;">
-
-        <!-- Cat 1 - Price -->
-        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
-            <div style="width:44px;height:44px;border-radius:10px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏷</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">价格 & 产品信息</div>
-              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">14 个问题 · 解决 9 个</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:18px;font-weight:900;color:var(--fail);">37%</div>
-              <div style="font-size:11px;color:var(--ikea-muted);">占比最高 ⚠</div>
-            </div>
-          </div>
-          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body">
-            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
-              <div style="height:100%;width:64%;background:var(--ok);border-radius:3px;"></div>
-            </div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
-            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
-              • 价格标签被陈列物遮挡：<strong>RULLERUM、SÖDERHAMN</strong> 系列多次出现<br>
-              • 缺少材质保养信息：皮质产品占比高<br>
-              • 尺寸标注不完整：宽×深×高三维需同时显示<br>
-              • 建议每日开店前由专人巡检价格区域
-            </div>
-          </div>
-        </div>
-
-        <!-- Cat 2 - Condition -->
-        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
-            <div style="width:44px;height:44px;border-radius:10px;background:#FFF9F0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✨</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">产品清洁 & 状态</div>
-              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">11 个问题 · 解决 8 个</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:18px;font-weight:900;color:var(--warn);">29%</div>
-              <div style="font-size:11px;color:var(--ikea-muted);">占比第二</div>
-            </div>
-          </div>
-          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body" style="display:none;">
-            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
-              <div style="height:100%;width:73%;background:var(--ok);border-radius:3px;"></div>
-            </div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
-            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
-              • 织物沙发积灰严重，建议每日用吸尘器清洁<br>
-              • <strong>KIVIK 奇维</strong> 本周出现2次螺丝松动，安全隐患需定期巡检<br>
-              • 展示垫子/靠枕位置散乱，需规范摆放标准<br>
-              • 建议制定「展示标准照」供员工对照整理
-            </div>
-          </div>
-        </div>
-
-        <!-- Cat 3 - Availability -->
-        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
-            <div style="width:44px;height:44px;border-radius:10px;background:#F0FAF3;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📦</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">库存 & 可购买性</div>
-              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">8 个问题 · 解决 7 个</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:18px;font-weight:900;color:#856404;">21%</div>
-              <div style="font-size:11px;color:var(--ikea-muted);">解决率最高</div>
-            </div>
-          </div>
-          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body" style="display:none;">
-            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
-              <div style="height:100%;width:88%;background:var(--ok);border-radius:3px;"></div>
-            </div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
-            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
-              • 自助区库存为零时需立即补货或添加订货说明<br>
-              • <strong>RULLERUM 电动躺椅</strong> 库存频繁归零，建议与供应链沟通<br>
-              • 取货位置标示牌部分脱落，需重新粘贴
-            </div>
-          </div>
-        </div>
-
-        <!-- Cat 4 - Presentation -->
-        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
-            <div style="width:44px;height:44px;border-radius:10px;background:#F0F5FF;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👁</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">产品陈列</div>
-              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">5 个问题 · 解决 3 个</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:18px;font-weight:900;color:var(--ikea-blue);">13%</div>
-              <div style="font-size:11px;color:var(--ikea-muted);">占比最低</div>
-            </div>
-          </div>
-          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body" style="display:none;">
-            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
-              <div style="height:100%;width:60%;background:var(--ok);border-radius:3px;"></div>
-            </div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
-            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
-              • 部分产品颜色/规格选项未全部展示<br>
-              • 组合产品缺少完整组合展示，仅展示单品<br>
-              • 建议与陈列团队同步 MCC（最商业组合）标准
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Issue heatmap by day -->
-      <div class="section-title">📅 每日问题数量</div>
-      <div style="margin:0 16px 16px;background:var(--ikea-gray);border-radius:var(--radius);padding:16px;">
-        <div style="display:flex;align-items:flex-end;gap:6px;height:90px;justify-content:space-between;">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">9</div>
-            <div style="width:100%;background:var(--fail);border-radius:4px 4px 0 0;height:72px;opacity:0.8;"></div>
-            <span style="font-size:10px;color:var(--ikea-muted);">周一</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">7</div>
-            <div style="width:100%;background:var(--warn);border-radius:4px 4px 0 0;height:56px;opacity:0.8;"></div>
-            <span style="font-size:10px;color:var(--ikea-muted);">周二</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">8</div>
-            <div style="width:100%;background:var(--warn);border-radius:4px 4px 0 0;height:64px;opacity:0.8;"></div>
-            <span style="font-size:10px;color:var(--ikea-muted);">周三</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">6</div>
-            <div style="width:100%;background:#856404;border-radius:4px 4px 0 0;height:48px;opacity:0.7;"></div>
-            <span style="font-size:10px;color:var(--ikea-muted);">周四</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--ikea-blue);">8</div>
-            <div style="width:100%;background:var(--ikea-blue);border-radius:4px 4px 0 0;height:64px;opacity:0.6;"></div>
-            <span style="font-size:10px;color:var(--ikea-blue);font-weight:700;">今天</span>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--ikea-muted);text-align:center;margin-top:8px;">本周趋势：周一问题最多，后半周趋于稳定</div>
-      </div>
-
-      <!-- Focus areas for next week -->
-      <div class="section-title">🎯 下周集中突破建议</div>
-      <div style="margin:0 16px 16px;display:flex;flex-direction:column;gap:10px;">
-
-        <div style="background:white;border-left:4px solid var(--fail);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:18px;">🏷</span>
-            <span style="font-weight:700;font-size:14px;">P1 · 价格标签专项整治</span>
-            <span style="background:#FFEBEE;color:var(--fail);font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto;">最高频</span>
-          </div>
-          <div style="font-size:13px;color:var(--ikea-muted);line-height:1.5;">建议周一早班统一巡检所有沙发/椅类产品价格牌。重点产品：RULLERUM、SÖDERHAMN、KIVIK</div>
-        </div>
-
-        <div style="background:white;border-left:4px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:18px;">✨</span>
-            <span style="font-weight:700;font-size:14px;">P2 · 产品清洁标准化</span>
-            <span style="background:#FFF3CD;color:#856404;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto;">反复出现</span>
-          </div>
-          <div style="font-size:13px;color:var(--ikea-muted);line-height:1.5;">制定清洁 SOP，织物产品每日吸尘，皮质产品每周擦拭。可参考「展示标准照」对照执行</div>
-        </div>
-
-        <div style="background:white;border-left:4px solid var(--ok);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:18px;">🏆</span>
-            <span style="font-weight:700;font-size:14px;">表扬 · 库存管理改善明显</span>
-            <span style="background:#E8F5E9;color:var(--ok);font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto;">解决率88%</span>
-          </div>
-          <div style="font-size:13px;color:var(--ikea-muted);line-height:1.5;">库存问题解决率本周达 88%，较上周提升 15%。团队响应速度明显加快，继续保持 💪</div>
-        </div>
-      </div>
-
-      <!-- Product family ranking -->
-      <div class="section-title">🛋 产品系列得分排行</div>
-      <div style="margin:0 16px 16px;">
-        <div style="background:white;border-radius:var(--radius);border:1.5px solid var(--ikea-border);overflow:hidden;">
-          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
-            <span style="font-size:16px;margin-right:10px;">🥇</span>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">BORGEBY 伯格比</div>
-              <div style="font-size:12px;color:var(--ikea-muted);">3次测试 · 满分率100%</div>
-            </div>
-            <div style="font-size:18px;font-weight:900;color:var(--ok);">95</div>
-          </div>
-          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
-            <span style="font-size:16px;margin-right:10px;">🥈</span>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">HAVBERG 哈伯格</div>
-              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 问题均已解决</div>
-            </div>
-            <div style="font-size:18px;font-weight:900;color:var(--ok);">85</div>
-          </div>
-          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
-            <span style="font-size:16px;margin-right:10px;">🥉</span>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">KIVIK 奇维</div>
-              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 仍有安全问题待查</div>
-            </div>
-            <div style="font-size:18px;font-weight:900;color:var(--warn);">72</div>
-          </div>
-          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
-            <span style="font-size:16px;margin-right:10px;">4️⃣</span>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">SÖDERHAMN 索德汉</div>
-              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 价格标签反复问题</div>
-            </div>
-            <div style="font-size:18px;font-weight:900;color:var(--warn);">68</div>
-          </div>
-          <div style="display:flex;align-items:center;padding:12px 16px;">
-            <span style="font-size:16px;margin-right:10px;">5️⃣</span>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:700;">RULLERUM 鲁勒鲁姆</div>
-              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 需重点关注</div>
-            </div>
-            <div style="font-size:18px;font-weight:900;color:var(--fail);">60</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Export -->
-      <div class="btn-section" style="display:flex;flex-direction:column;gap:10px;">
-        <button class="btn btn-primary" onclick="showToast('📤 周报已分享给团队')">
-          📤 分享周报给团队
-        </button>
-        <button class="btn btn-outline" onclick="showToast('📥 已导出 PDF')">
-          📥 导出 PDF 报告
-        </button>
-      </div>
-
-    </div>
-
-    <div class="bottom-nav">
-      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
-      <button class="nav-item" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
-      <button class="nav-item" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
-      <button class="nav-item active" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
-    </div>
-  </div>
-
-
-
-
-  <!-- ============ SCREEN: TEAM ============ -->
-  <div class="screen" id="screen-team">
-    <div class="status-bar">
-      <span>10:30</span>
-      <span><span class="logo-badge">IKEA</span></span>
-      <span>⚡ 85%</span>
-    </div>
-    <div class="header">
-      <div>
-        <div class="header-title">团队进展</div>
-        <div class="header-sub">HFB01 起居 · 2026年5月18日</div>
-      </div>
-    </div>
-
-    <div class="scroll-content">
-      <div class="team-overview">
-        <div class="team-overview-title">今日整体完成情况</div>
-        <div class="ring-wrapper">
-          <div class="ring-chart">
-            <div class="ring-inner">55%<span>完成</span></div>
-          </div>
-          <div class="ring-legend">
-            <div class="legend-row">
-              <div class="legend-dot" style="background:var(--ok)"></div>
-              <span style="font-size:13px">已完成 <strong>4/12</strong> 项改进</span>
-            </div>
-            <div class="legend-row">
-              <div class="legend-dot" style="background:var(--warn)"></div>
-              <span style="font-size:13px">进行中 <strong>2</strong> 个产品</span>
-            </div>
-            <div class="legend-row">
-              <div class="legend-dot" style="background:var(--ikea-border)"></div>
-              <span style="font-size:13px">待开始 <strong>5</strong> 个产品</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title">👥 团队成员</div>
-
-      <div class="team-member">
-        <div class="avatar" style="background:#E67700">王</div>
-        <div class="member-info">
-          <div class="member-name">Adam Wang <span style="font-size:11px; background:#FFD700; color:#333; padding:1px 6px; border-radius:8px; font-weight:600">你</span></div>
-          <div class="member-status">已完成 3 个产品 · 解决 2 项问题</div>
-        </div>
-        <div class="member-progress">
-          <div class="member-pct">30%</div>
-          <div class="member-tasks">3/10 产品</div>
-        </div>
-      </div>
-
-      <div class="team-member">
-        <div class="avatar" style="background:#0058A3">李</div>
-        <div class="member-info">
-          <div class="member-name">Li Ming</div>
-          <div class="member-status">已完成 2 个产品 · 解决 2 项问题</div>
-        </div>
-        <div class="member-progress">
-          <div class="member-pct">20%</div>
-          <div class="member-tasks">2/10 产品</div>
-        </div>
-      </div>
-
-      <div class="team-member">
-        <div class="avatar" style="background:#168740">陈</div>
-        <div class="member-info">
-          <div class="member-name">Chen Jia</div>
-          <div class="member-status">正在进行中…</div>
-        </div>
-        <div class="member-progress">
-          <div class="member-pct">0%</div>
-          <div class="member-tasks">1 进行中</div>
-        </div>
-      </div>
-
-      <div class="team-member">
-        <div class="avatar" style="background:#767676">赵</div>
-        <div class="member-info">
-          <div class="member-name">Zhao Lei</div>
-          <div class="member-status">尚未开始</div>
-        </div>
-        <div class="member-progress">
-          <div class="member-pct" style="color:var(--ikea-muted)">-</div>
-          <div class="member-tasks">待开始</div>
-        </div>
-      </div>
-
-      <div class="section-title">📋 实时动态</div>
-
-      <div class="activity-item">
-        <div class="activity-dot"></div>
-        <div>
-          <div class="activity-text"><strong>Adam</strong> 完成了 BORGEBY 茶几 Test Buy ✅（评分90/100）</div>
-          <div class="activity-time">10:22</div>
-        </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-dot"></div>
-        <div>
-          <div class="activity-text"><strong>Li Ming</strong> 解决了「RULLERUM 库存补货」改进项 ✓</div>
-          <div class="activity-time">10:18</div>
-        </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-dot warn"></div>
-        <div>
-          <div class="activity-text"><strong>Adam</strong> 发现 KIVIK 扶手螺丝安全问题，需立即处理 ⚠</div>
-          <div class="activity-time">10:05</div>
-        </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-dot"></div>
-        <div>
-          <div class="activity-text"><strong>系统</strong> 自动选取今日10个测试产品，包含3个Top产品</div>
-          <div class="activity-time">09:30</div>
-        </div>
-      </div>
-
-      <div class="section-title">🏆 本周完成率趋势</div>
-      <div style="margin: 0 16px 16px; background:var(--ikea-gray); border-radius:var(--radius); padding:16px">
-        <div style="display:flex; align-items:flex-end; gap:8px; height:80px; justify-content:space-between">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-            <div style="width:36px; background:var(--ikea-blue); border-radius:4px 4px 0 0; height:48px"></div>
-            <span style="font-size:11px;color:var(--ikea-muted)">周一</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-            <div style="width:36px; background:var(--ikea-blue); border-radius:4px 4px 0 0; height:64px"></div>
-            <span style="font-size:11px;color:var(--ikea-muted)">周二</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-            <div style="width:36px; background:var(--ok); border-radius:4px 4px 0 0; height:72px"></div>
-            <span style="font-size:11px;color:var(--ikea-muted)">周三</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-            <div style="width:36px; background:var(--ikea-blue); border-radius:4px 4px 0 0; height:56px"></div>
-            <span style="font-size:11px;color:var(--ikea-muted)">周四</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-            <div style="width:36px; background:var(--warn); border-radius:4px 4px 0 0; height:40px; opacity:0.5"></div>
-            <span style="font-size:11px;color:var(--ikea-muted)">今天</span>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--ikea-muted);text-align:center;margin-top:8px">本周平均完成率 68% · 目标 80%</div>
-      </div>
-    </div>
-
-    <div class="bottom-nav">
-      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
-      <button class="nav-item" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
-      <button class="nav-item active" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
-      <button class="nav-item" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
-    </div>
-  </div>
-
 </div>
 
+<!-- ====== DETAIL ====== -->
+<div class="screen" id="s-detail">
+  <div class="sbar"><span id="time-detail">--:--</span><span><span class="logo">IKEA</span></span><span id="det-pos">1/10</span></div>
+  <div class="hdr">
+    <div class="hdr-back" onclick="nav('home')">←</div>
+    <div><h1>产品评估</h1><p id="det-subtitle">填写检查结果</p></div>
+  </div>
+  <div class="scroll">
+    <div class="dhero">
+      <div style="font-size:11px;color:var(--muted)" id="det-artno"></div>
+      <h2 id="det-name"></h2>
+      <div class="price" id="det-price"></div>
+      <div class="meta" id="det-meta"></div>
+    </div>
+
+    <div class="stitle">📷 现场照片（建议4张）</div>
+    <div class="photos-grid" id="photos-grid"></div>
+    <button class="upload-btn" onclick="openCamera()">
+      📷 拍照 / 从相册选择
+    </button>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple onchange="handlePhotos(event)">
+
+    <div class="divider"></div>
+    <div class="stitle">📋 Merchandising Basics 评估</div>
+    <div class="criteria-list" id="criteria-list"></div>
+
+    <div class="btn-sec">
+      <button class="btn btn-ok" id="save-btn" onclick="saveEval()">💾 保存评估结果</button>
+    </div>
+    <div style="height:10px"></div>
+  </div>
+  <div class="bnav">
+    <button class="ni" onclick="nav('home')"><span class="ic">🏠</span>今日任务</button>
+    <button class="ni" onclick="nav('checklist')"><span class="ic">✅</span>改进清单</button>
+    <button class="ni" onclick="nav('team')"><span class="ic">👥</span>团队</button>
+    <button class="ni" onclick="nav('weekly')"><span class="ic">📊</span>周报</button>
+  </div>
+</div>
+
+<!-- ====== CHECKLIST ====== -->
+<div class="screen" id="s-checklist">
+  <div class="sbar"><span id="time-cl">--:--</span><span><span class="logo">IKEA</span></span><span>改进清单</span></div>
+  <div class="hdr"><div><h1>改进清单</h1><p id="cl-date"></p></div></div>
+  <div class="scroll">
+    <div class="cl-summary">
+      <div class="cl-pills">
+        <div class="pill p-all"><span class="pn" id="cl-total">0</span><span class="pl">全部</span></div>
+        <div class="pill p-done"><span class="pn" id="cl-done">0</span><span class="pl">已解决</span></div>
+        <div class="pill p-pend"><span class="pn" id="cl-pend">0</span><span class="pl">待处理</span></div>
+      </div>
+      <div class="prg-b" style="margin-top:12px;height:10px">
+        <div class="prg-f" id="cl-prg" style="width:0%;background:var(--ok)"></div>
+      </div>
+    </div>
+    <div id="checklist-body">
+      <div class="empty">完成产品评估后，改进项将自动出现在这里</div>
+    </div>
+    <div class="btn-sec" style="padding:0 20px 20px">
+      <button class="btn btn-out" onclick="exportData()">📤 导出数据（分享给同事）</button>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="ni" onclick="nav('home')"><span class="ic">🏠</span>今日任务</button>
+    <button class="ni active" onclick="nav('checklist')"><span class="ic">✅</span>改进清单</button>
+    <button class="ni" onclick="nav('team')"><span class="ic">👥</span>团队</button>
+    <button class="ni" onclick="nav('weekly')"><span class="ic">📊</span>周报</button>
+  </div>
+</div>
+
+<!-- ====== TEAM ====== -->
+<div class="screen" id="s-team">
+  <div class="sbar"><span id="time-team">--:--</span><span><span class="logo">IKEA</span></span><span>团队</span></div>
+  <div class="hdr"><div><h1>团队进展</h1><p id="team-date"></p></div></div>
+  <div class="scroll">
+    <div class="tm-card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">HFB01 今日整体</div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="text-align:center">
+          <div id="team-score" style="font-size:36px;font-weight:900;color:var(--blue)">-</div>
+          <div style="font-size:12px;color:var(--muted)">我的完成率</div>
+        </div>
+        <div style="flex:1">
+          <div class="prg-b" style="height:10px"><div class="prg-f" id="team-prg" style="width:0%"></div></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px" id="team-detail">0/10 产品已完成评估</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stitle">📋 我的今日记录</div>
+    <div id="my-records"></div>
+
+    <div style="margin:0 16px 10px;border:1.5px solid var(--border);border-radius:var(--r);padding:14px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:8px">📤 分享给同事</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px">将今日评估数据导出，发给同事导入，即可合并查看团队进展</div>
+      <button class="btn btn-prim" onclick="exportData()" style="margin-bottom:8px">导出我的数据</button>
+      <button class="btn btn-out" onclick="showImport()">导入同事数据</button>
+    </div>
+
+    <div id="import-panel" class="panel">
+      <div style="font-size:14px;font-weight:700;margin-bottom:8px">粘贴同事的导出代码：</div>
+      <textarea id="import-text" style="width:100%;height:80px;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;resize:none;font-family:monospace" placeholder="粘贴JSON代码…"></textarea>
+      <button class="btn btn-ok" style="margin-top:8px" onclick="importData()">导入合并</button>
+    </div>
+
+    <div class="stitle">📡 团队动态</div>
+    <div id="team-activity"></div>
+  </div>
+  <div class="bnav">
+    <button class="ni" onclick="nav('home')"><span class="ic">🏠</span>今日任务</button>
+    <button class="ni" onclick="nav('checklist')"><span class="ic">✅</span>改进清单</button>
+    <button class="ni active" onclick="nav('team')"><span class="ic">👥</span>团队</button>
+    <button class="ni" onclick="nav('weekly')"><span class="ic">📊</span>周报</button>
+  </div>
+</div>
+
+<!-- ====== WEEKLY ====== -->
+<div class="screen" id="s-weekly">
+  <div class="sbar"><span id="time-wk">--:--</span><span><span class="logo">IKEA</span></span><span>周报</span></div>
+  <div class="hdr"><div><h1>本周总结报告</h1><p id="wk-range"></p></div></div>
+  <div class="scroll">
+    <div class="wk-hero">
+      <div style="font-size:12px;opacity:.7;margin-bottom:4px" id="wk-label"></div>
+      <div style="font-size:20px;font-weight:800">HFB01 周报</div>
+      <div class="wk-stats">
+        <div class="wk-sc"><div class="n" id="wk-tested">0</div><div class="l">测试产品</div></div>
+        <div class="wk-sc"><div class="n" id="wk-issues">0</div><div class="l">发现问题</div></div>
+        <div class="wk-sc"><div class="n" id="wk-resolved" style="color:var(--yellow)">0%</div><div class="l">解决率</div></div>
+        <div class="wk-sc"><div class="n" id="wk-avg">-</div><div class="l">平均评分</div></div>
+      </div>
+    </div>
+    <div id="wk-body"></div>
+  </div>
+  <div class="bnav">
+    <button class="ni" onclick="nav('home')"><span class="ic">🏠</span>今日任务</button>
+    <button class="ni" onclick="nav('checklist')"><span class="ic">✅</span>改进清单</button>
+    <button class="ni" onclick="nav('team')"><span class="ic">👥</span>团队</button>
+    <button class="ni active" onclick="nav('weekly')"><span class="ic">📊</span>周报</button>
+  </div>
+</div>
+
+</div><!-- /phone -->
+
+<script src="data.js"></script>
 <script>
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  document.querySelectorAll('.bottom-nav').forEach(nav => {
-    nav.querySelectorAll('.nav-item').forEach((btn, i) => {
-      btn.classList.remove('active');
-    });
+// ====== CONSTANTS ======
+const CRITERIA = [
+  {id:'presented', icon:'👁', label:'1. 产品是否已陈列？', sub:'在正确展示区，客户可见并可体验、可试用'},
+  {id:'condition',  icon:'✨', label:'2. 产品状态是否完好？', sub:'清洁 · 正确组装 · 符合安全标准'},
+  {id:'priced',    icon:'🏷', label:'3. 价格与产品信息是否清晰？', sub:'名称·价格·尺寸·颜色材质·保养说明·客户利益'},
+  {id:'buying',    icon:'🛒', label:'4. 购买引导是否清晰？', sub:'取货位置清晰 · 购买方式说明 · QR码有效'},
+  {id:'available', icon:'📦', label:'5. 产品是否可购买？', sub:'现货可取走 / 或可订货说明清晰'}
+];
+
+const ISSUE_HINTS = {
+  condition:  ['清洁产品表面（污迹/灰尘）','整理靠枕/垫子摆放','检查并拧紧松动螺丝','更换破损展示配件'],
+  priced:     ['重新放置被遮挡的价格标签','补充尺寸标注（宽×深×高）','补充材质与保养说明','确认线上线下价格一致'],
+  buying:     ['补充取货位置指引','修复无效的QR码','添加可订货/送货说明牌'],
+  available:  ['补充自助取货区库存','添加缺货时的订货说明','更新取货位置标示牌'],
+  presented:  ['调整陈列位置至正确展示区','补充颜色/规格选项展示','增加组合搭配展示']
+};
+
+// ====== STATE ======
+let state = {
+  today: todayKey(),
+  products: [],       // today's 10 products
+  evals: {},          // {artno: {criteria:{},notes:{},photos:[],done:bool}}
+  checks: {},         // {checkId: bool}
+  teammates: [],      // imported teammate data
+  activities: []
+};
+let currentArtno = null;
+
+// ====== DATE UTILS ======
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+}
+function weekKey(d) {
+  const jan1 = new Date(d.getFullYear(),0,1);
+  return Math.ceil(((d - jan1)/86400000 + jan1.getDay()+1)/7);
+}
+function fmtDate(d) {
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
+}
+function timeStr() {
+  const d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+function updateClocks() {
+  const t=timeStr();
+  ['home','detail','cl','team','wk'].forEach(id=>{
+    const el=document.getElementById('time-'+id);
+    if(el) el.textContent=t;
   });
 }
 
-function openDetail(idx) {
-  showScreen('detail');
+// ====== SEEDED RNG (mulberry32) ======
+function seededRng(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rng) {
+  const a = [...arr];
+  for (let i=a.length-1;i>0;i--) {
+    const j=Math.floor(rng()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
 }
 
-function toggleCheck(item) {
-  const cb = item.querySelector('.checkbox');
-  const text = item.querySelector('.check-text');
-  cb.classList.toggle('checked');
-  text.classList.toggle('done');
-  if (cb.classList.contains('checked')) {
-    showToast('✅ 已标记为完成！');
+// ====== DAILY SELECTION ======
+function selectDaily() {
+  const rng = seededRng(state.today);
+  const tops    = HFB01_PRODUCTS.filter(p => p.top && p.range !== 'PAST UTG');
+  const others  = HFB01_PRODUCTS.filter(p => !p.top && (p.range === 'Running' || p.range.includes('NEWS')));
+  const selTops   = shuffle(tops, rng).slice(0,5);
+  const selOthers = shuffle(others, rng).slice(0,5);
+  return [...selTops, ...selOthers];
+}
+
+// ====== LOCALSTORAGE ======
+function saveState() {
+  try { localStorage.setItem('testbuy_state', JSON.stringify(state)); } catch(e){}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem('testbuy_state');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    // If new day, reset evals and products but keep weekly data
+    if (saved.today !== state.today) {
+      state.checks = {};
+      state.activities = saved.activities || [];
+    } else {
+      Object.assign(state, saved);
+    }
+  } catch(e) {}
+}
+
+// ====== INIT ======
+function init() {
+  loadState();
+  state.today = todayKey();
+  state.products = selectDaily();
+  const now = new Date();
+  document.getElementById('home-date').textContent = fmtDate(now) + ' · 星期' + ['日','一','二','三','四','五','六'][now.getDay()];
+  document.getElementById('hero-week').textContent = '第 ' + weekKey(now) + ' 周';
+  document.getElementById('cl-date').textContent = fmtDate(now);
+  document.getElementById('team-date').textContent = fmtDate(now);
+  document.getElementById('wk-range').textContent = 'W' + weekKey(now) + ' · HFB01';
+  document.getElementById('wk-label').textContent = '第 ' + weekKey(now) + ' 周 · 自动生成';
+  renderHome();
+  updateClocks();
+  setInterval(updateClocks, 30000);
+}
+
+// ====== RENDER HOME ======
+function renderHome() {
+  const evals = state.evals;
+  let done=0, prog=0;
+  state.products.forEach(p => {
+    const ev = evals[p.artno];
+    if (ev && ev.done) done++;
+    else if (ev && ev.photos && ev.photos.length>0) prog++;
+  });
+  const pend = 10 - done - prog;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-prog').textContent = prog;
+  document.getElementById('stat-pend').textContent = pend;
+  const pct = Math.round(done/10*100);
+  document.getElementById('prg-pct').textContent = pct+'%';
+  document.getElementById('prg-fill').style.width = pct+'%';
+
+  renderList('list-top', state.products.slice(0,5), true);
+  renderList('list-other', state.products.slice(5,10), false);
+}
+
+function renderList(containerId, products, isTop) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  products.forEach((p, idx) => {
+    const globalIdx = isTop ? idx : idx+5;
+    const ev = state.evals[p.artno];
+    const isDone = ev && ev.done;
+    const isInProg = ev && ev.photos && ev.photos.length>0 && !isDone;
+    const issueCount = isDone ? countIssues(p.artno) : 0;
+    const score = isDone ? calcScore(p.artno) : null;
+
+    const div = document.createElement('div');
+    div.className = 'pcard' + (isDone?' done':isInProg?' prog':'');
+    div.onclick = () => openDetail(p.artno);
+    div.innerHTML = `
+      <div class="cbody">
+        <div class="rk${isTop?' top':''}">${globalIdx+1}</div>
+        <div class="ci">
+          <div class="cname">${p.name.split(' ').slice(0,4).join(' ')}</div>
+          <div class="cartno">Art# ${p.artno} · ${p.family}</div>
+          <div class="cprice">¥${p.price.toLocaleString()}</div>
+          <div class="badges">
+            ${isTop?'<span class="badge b-top">⭐ Top产品</span>':''}
+            <span class="badge b-run">${p.range}</span>
+            ${isDone?'<span class="badge b-done">✓ 已完成</span>':isInProg?'<span class="badge b-prog">📷 进行中</span>':''}
+          </div>
+        </div>
+        <div class="sdot ${isDone?'d-ok':isInProg?'d-pr':'d-no'}"></div>
+      </div>
+      ${isDone?`<div class="cfoot"><span>评分：${score}/100</span><span class="${issueCount>0?'issues':''}">${issueCount>0?'⚠ '+issueCount+' 项问题':'✓ 无问题'}</span></div>`:''}
+    `;
+    container.appendChild(div);
+  });
+}
+
+function countIssues(artno) {
+  const ev = state.evals[artno];
+  if (!ev) return 0;
+  return CRITERIA.filter(c => ev.criteria && ev.criteria[c.id] === 'fail').length;
+}
+function calcScore(artno) {
+  const ev = state.evals[artno];
+  if (!ev || !ev.criteria) return 0;
+  const ok = CRITERIA.filter(c => ev.criteria[c.id] === 'ok').length;
+  return Math.round(ok/CRITERIA.length*100);
+}
+
+// ====== DETAIL ======
+function openDetail(artno) {
+  currentArtno = artno;
+  const p = state.products.find(x => x.artno === artno);
+  const idx = state.products.indexOf(p);
+  const ev = state.evals[artno] || {criteria:{}, notes:{}, photos:[], done:false};
+
+  document.getElementById('det-pos').textContent = (idx+1)+'/10';
+  document.getElementById('det-subtitle').textContent = idx < 5 ? '⭐ Top产品' : '普通产品';
+  document.getElementById('det-artno').textContent = 'Art# '+p.artno+' · PA '+p.pa+' · '+p.family;
+  document.getElementById('det-name').textContent = p.name;
+  document.getElementById('det-price').textContent = '¥'+p.price.toLocaleString();
+  document.getElementById('det-meta').textContent = p.range + (p.top?' · ⭐ Top产品':'');
+
+  // Photos
+  renderPhotos(ev.photos || []);
+
+  // Criteria
+  const cl = document.getElementById('criteria-list');
+  cl.innerHTML = '';
+  CRITERIA.forEach(c => {
+    const val = ev.criteria[c.id] || null;
+    const note = ev.notes[c.id] || '';
+    const div = document.createElement('div');
+    div.className = 'crit' + (val==='ok'?' ok-crit':val==='fail'?' fail-crit':'');
+    div.id = 'crit-'+c.id;
+    div.innerHTML = `
+      <div class="crit-hdr">
+        <div class="crit-icon">${c.icon}</div>
+        <div class="crit-info">
+          <div class="crit-label">${c.label}</div>
+          <div class="crit-sub">${c.sub}</div>
+        </div>
+        <div class="crit-btns">
+          <button class="crit-btn${val==='ok'?' ok-sel':''}" onclick="setCrit('${c.id}','ok')">OK</button>
+          <button class="crit-btn${val==='fail'?' fail-sel':''}" onclick="setCrit('${c.id}','fail')">✗</button>
+        </div>
+      </div>
+      <div class="crit-note" style="${val?'':'display:none'}" id="note-${c.id}">
+        <textarea rows="2" placeholder="备注（可选，描述具体问题）" onchange="setNote('${c.id}',this.value)">${note}</textarea>
+      </div>`;
+    cl.appendChild(div);
+  });
+  nav('detail');
+}
+
+function setCrit(id, val) {
+  if (!state.evals[currentArtno]) state.evals[currentArtno] = {criteria:{}, notes:{}, photos:[], done:false};
+  state.evals[currentArtno].criteria[id] = val;
+  // Update UI
+  const card = document.getElementById('crit-'+id);
+  card.className = 'crit ' + (val==='ok'?'ok-crit':'fail-crit');
+  card.querySelectorAll('.crit-btn').forEach(b => b.className = 'crit-btn');
+  const btns = card.querySelectorAll('.crit-btn');
+  if (val==='ok') btns[0].className = 'crit-btn ok-sel';
+  else btns[1].className = 'crit-btn fail-sel';
+  document.getElementById('note-'+id).style.display = '';
+  saveState();
+}
+function setNote(id, val) {
+  if (!state.evals[currentArtno]) return;
+  state.evals[currentArtno].notes[id] = val;
+  saveState();
+}
+
+function saveEval() {
+  if (!state.evals[currentArtno]) { showToast('请先填写评估并上传照片'); return; }
+  const ev = state.evals[currentArtno];
+  const filled = CRITERIA.filter(c => ev.criteria[c.id]).length;
+  if (filled < 3) { showToast('请至少完成3项评估'); return; }
+  ev.done = true;
+  // Generate checklist items
+  CRITERIA.forEach(c => {
+    if (ev.criteria[c.id] === 'fail') {
+      const hints = ISSUE_HINTS[c.id] || [];
+      hints.forEach((hint, hi) => {
+        const checkId = currentArtno + '_' + c.id + '_' + hi;
+        if (!(checkId in state.checks)) state.checks[checkId] = false;
+      });
+    }
+  });
+  // Add activity
+  const p = state.products.find(x => x.artno === currentArtno);
+  state.activities.unshift({time: timeStr(), text: '完成了 ' + p.name.split(' ')[0] + ' 评估（评分'+calcScore(currentArtno)+'/100）', type:'ok'});
+  saveState();
+  showToast('✅ 评估已保存！');
+  renderHome();
+  setTimeout(()=>nav('home'), 800);
+}
+
+// ====== CAMERA ======
+function openCamera() {
+  document.getElementById('cameraInput').click();
+}
+function handlePhotos(event) {
+  const files = event.target.files;
+  if (!files || !files.length) return;
+  if (!state.evals[currentArtno]) state.evals[currentArtno] = {criteria:{}, notes:{}, photos:[], done:false};
+  const ev = state.evals[currentArtno];
+  let loaded = 0;
+  Array.from(files).slice(0, 6).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      ev.photos.push(e.target.result);
+      loaded++;
+      if (loaded === Math.min(files.length, 6)) {
+        renderPhotos(ev.photos);
+        saveState();
+        showToast('📷 已添加 '+loaded+' 张照片');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+function renderPhotos(photos) {
+  const grid = document.getElementById('photos-grid');
+  grid.innerHTML = '';
+  if (!photos || !photos.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:14px;text-align:center;color:var(--muted);font-size:13px">暂无照片，点击下方按钮拍照</div>';
+    return;
+  }
+  photos.forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `<img src="${src}" alt="photo"><button class="del" onclick="deletePhoto(${i})">✕</button>`;
+    grid.appendChild(div);
+  });
+}
+function deletePhoto(idx) {
+  if (!state.evals[currentArtno]) return;
+  state.evals[currentArtno].photos.splice(idx, 1);
+  renderPhotos(state.evals[currentArtno].photos);
+  saveState();
+}
+
+// ====== CHECKLIST ======
+function renderChecklist() {
+  const today = new Date();
+  document.getElementById('cl-date').textContent = fmtDate(today);
+  const body = document.getElementById('checklist-body');
+  const allItems = [];
+
+  state.products.forEach(p => {
+    const ev = state.evals[p.artno];
+    if (!ev || !ev.done) return;
+    const failCrits = CRITERIA.filter(c => ev.criteria[c.id] === 'fail');
+    if (!failCrits.length) return;
+    const items = [];
+    failCrits.forEach(c => {
+      const hints = ISSUE_HINTS[c.id] || [];
+      hints.forEach((hint, hi) => {
+        const checkId = p.artno + '_' + c.id + '_' + hi;
+        items.push({checkId, hint, crit: c, productName: p.name.split(' ').slice(0,3).join(' ')});
+        allItems.push({checkId});
+      });
+    });
+    if (items.length) {
+      const group = document.createElement('div');
+      group.className = 'cl-group';
+      const productShort = p.name.split(' ').slice(0,3).join(' ');
+      group.innerHTML = `<div class="cl-gtitle"><span>${productShort}</span><span class="gbadge">${items.length}项</span></div>`;
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'chk-item';
+        const checked = state.checks[item.checkId];
+        div.innerHTML = `
+          <div class="checkbox${checked?' chked':''}"></div>
+          <div class="chk-content">
+            <div class="chk-text${checked?' crossed':''}">${item.hint}</div>
+            <div class="chk-meta">
+              <span class="pri pri-m">${item.crit.icon} ${item.crit.label.split('?')[0].replace(/^\d\.\s/,'')}</span>
+            </div>
+          </div>`;
+        div.onclick = () => toggleCheck(item.checkId, div);
+        group.appendChild(div);
+      });
+      body.appendChild(group);
+    }
+  });
+
+  if (!allItems.length) {
+    body.innerHTML = '<div class="empty">完成产品评估后，改进项将自动出现在这里</div>';
+  }
+
+  const total = allItems.length;
+  const done = allItems.filter(i => state.checks[i.checkId]).length;
+  document.getElementById('cl-total').textContent = total;
+  document.getElementById('cl-done').textContent = done;
+  document.getElementById('cl-pend').textContent = total - done;
+  document.getElementById('cl-prg').style.width = total ? Math.round(done/total*100)+'%' : '0%';
+}
+
+function toggleCheck(checkId, el) {
+  state.checks[checkId] = !state.checks[checkId];
+  const cb = el.querySelector('.checkbox');
+  const txt = el.querySelector('.chk-text');
+  cb.classList.toggle('chked', state.checks[checkId]);
+  txt.classList.toggle('crossed', state.checks[checkId]);
+  if (state.checks[checkId]) showToast('✅ 已标记完成');
+  else showToast('↩ 已取消完成标记');
+  saveState();
+  renderChecklist();
+}
+
+// ====== TEAM ======
+function renderTeam() {
+  const done = state.products.filter(p => state.evals[p.artno] && state.evals[p.artno].done).length;
+  const pct = Math.round(done/10*100) + '%';
+  document.getElementById('team-score').textContent = pct;
+  document.getElementById('team-prg').style.width = pct;
+  document.getElementById('team-detail').textContent = done + '/10 产品已完成评估';
+
+  const rec = document.getElementById('my-records');
+  rec.innerHTML = '';
+  state.products.forEach((p,i) => {
+    const ev = state.evals[p.artno];
+    const isDone = ev && ev.done;
+    const div = document.createElement('div');
+    div.className = 'member';
+    div.style.cursor = 'pointer';
+    div.onclick = () => openDetail(p.artno);
+    div.innerHTML = `
+      <div class="av" style="background:${isDone?'var(--ok)':'var(--border)'};color:${isDone?'#fff':'var(--muted)'};font-size:13px;font-weight:700">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.name.split(' ').slice(0,3).join(' ')}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${isDone?'评分 '+calcScore(p.artno)+'/100 · '+countIssues(p.artno)+'项问题':ev&&ev.photos&&ev.photos.length?'照片已上传，未完成评估':'待开始'}</div>
+      </div>
+      <div style="font-size:18px">${isDone?'✅':ev&&ev.photos&&ev.photos.length?'📷':'⭕'}</div>`;
+    rec.appendChild(div);
+  });
+
+  const act = document.getElementById('team-activity');
+  act.innerHTML = '';
+  if (!state.activities.length) {
+    act.innerHTML = '<div class="empty">完成评估后这里会显示动态</div>';
+    return;
+  }
+  state.activities.slice(0,10).forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'act';
+    div.innerHTML = `<div class="act-dot${a.type==='warn'?' w':''}"></div><div><div style="font-size:13px;line-height:1.4">${a.text}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${a.time}</div></div>`;
+    act.appendChild(div);
+  });
+}
+
+function showImport() {
+  const panel = document.getElementById('import-panel');
+  panel.classList.toggle('open');
+}
+function exportData() {
+  const data = {user: '我', today: state.today, evals: state.evals, checks: state.checks, activities: state.activities, ts: Date.now()};
+  const json = JSON.stringify(data);
+  navigator.clipboard.writeText(json).then(() => showToast('📋 数据已复制到剪贴板，发给同事即可'));
+}
+function importData() {
+  try {
+    const text = document.getElementById('import-text').value.trim();
+    const data = JSON.parse(text);
+    if (data.today !== state.today) { showToast('⚠ 日期不匹配，无法合并'); return; }
+    // Merge evals and checks
+    Object.assign(state.evals, data.evals || {});
+    Object.assign(state.checks, data.checks || {});
+    state.activities = [...(data.activities||[]), ...state.activities].slice(0,20);
+    saveState();
+    renderHome();
+    renderTeam();
+    showToast('✅ 同事数据已合并！');
+    document.getElementById('import-panel').classList.remove('open');
+  } catch(e) { showToast('❌ 数据格式错误'); }
+}
+
+// ====== WEEKLY ======
+function renderWeekly() {
+  const now = new Date();
+  const wn = weekKey(now);
+  document.getElementById('wk-range').textContent = 'W' + wn + ' · ' + fmtDate(now);
+
+  // Collect this week's data from localStorage (all days)
+  let allEvals = {...state.evals};
+  let allChecks = {...state.checks};
+  const issues = {presented:0, condition:0, priced:0, buying:0, available:0};
+  let totalProducts = 0, totalIssues = 0, resolvedIssues = 0, totalScore = 0, scoredCount = 0;
+
+  Object.values(allEvals).forEach(ev => {
+    if (!ev.done) return;
+    totalProducts++;
+    const score = Object.values(ev.criteria).filter(v=>v==='ok').length / CRITERIA.length * 100;
+    totalScore += score; scoredCount++;
+    CRITERIA.forEach(c => {
+      if (ev.criteria[c.id] === 'fail') { issues[c.id]++; totalIssues++; }
+    });
+  });
+
+  Object.entries(allChecks).forEach(([k,v]) => { if(v) resolvedIssues++; });
+  const resolvedPct = totalIssues > 0 ? Math.round(resolvedIssues/totalIssues*100) : 0;
+
+  document.getElementById('wk-tested').textContent = totalProducts;
+  document.getElementById('wk-issues').textContent = totalIssues;
+  document.getElementById('wk-resolved').textContent = resolvedPct + '%';
+  document.getElementById('wk-avg').textContent = scoredCount ? Math.round(totalScore/scoredCount) : '-';
+
+  const body = document.getElementById('wk-body');
+  body.innerHTML = '';
+
+  if (totalProducts === 0) {
+    body.innerHTML = '<div class="empty">本周暂无完成的评估数据<br>完成 Test Buy 后周报将自动更新</div>';
+    return;
+  }
+
+  // Category breakdown
+  const cats = [
+    {id:'priced',    icon:'🏷', label:'价格 & 产品信息', bg:'#FFF0F0', color:issues.priced>0?'var(--fail)':'var(--ok)'},
+    {id:'condition', icon:'✨', label:'产品清洁 & 状态',  bg:'#FFF9F0', color:issues.condition>0?'var(--warn)':'var(--ok)'},
+    {id:'available', icon:'📦', label:'库存 & 可购买性',  bg:'#F0FAF3', color:issues.available>0?'#856404':'var(--ok)'},
+    {id:'presented', icon:'👁', label:'产品陈列',          bg:'#F0F5FF', color:issues.presented>0?'var(--blue)':'var(--ok)'},
+    {id:'buying',    icon:'🛒', label:'购买引导',          bg:'#F5F0FF', color:issues.buying>0?'#6600CC':'var(--ok)'},
+  ].sort((a,b) => issues[b.id] - issues[a.id]);
+
+  const secTitle = document.createElement('div');
+  secTitle.className = 'stitle';
+  secTitle.textContent = '🔍 问题分类分析';
+  body.appendChild(secTitle);
+
+  cats.forEach(cat => {
+    const cnt = issues[cat.id];
+    const pct = totalIssues > 0 ? Math.round(cnt/totalIssues*100) : 0;
+    const hints = ISSUE_HINTS[cat.id] || [];
+    const card = document.createElement('div');
+    card.className = 'cat-card';
+    card.innerHTML = `
+      <div class="cat-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div class="cat-icon" style="background:${cat.bg}">${cat.icon}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${cat.label}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${cnt} 个问题</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:900;color:${cat.color}">${pct}%</div>
+          <div style="font-size:10px;color:var(--muted)">占比</div>
+        </div>
+      </div>
+      <div class="cat-body">
+        <div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:10px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${cat.color};border-radius:3px"></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">🎯 改进建议</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6">${hints.map(h=>'• '+h).join('<br>')}</div>
+      </div>`;
+    body.appendChild(card);
+  });
+
+  // Focus for next week
+  const focusTitle = document.createElement('div');
+  focusTitle.className = 'stitle';
+  focusTitle.textContent = '🎯 重点突破建议';
+  body.appendChild(focusTitle);
+
+  const topCats = cats.filter(c => issues[c.id] > 0).slice(0,2);
+  if (!topCats.length) {
+    const noIssue = document.createElement('div');
+    noIssue.style = 'margin:0 16px 16px;padding:14px;background:#E8F5E9;border-radius:var(--r);font-size:14px;color:var(--ok);font-weight:600;text-align:center';
+    noIssue.textContent = '🏆 本周无重大问题，继续保持！';
+    body.appendChild(noIssue);
   } else {
-    showToast('↩ 已取消完成标记');
+    topCats.forEach((cat,i) => {
+      const fc = document.createElement('div');
+      fc.className = 'focus-card';
+      fc.style.margin = '0 16px 10px';
+      fc.style.borderLeftColor = i===0?'var(--fail)':'var(--warn)';
+      const hints = ISSUE_HINTS[cat.id] || [];
+      fc.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:18px">${cat.icon}</span>
+          <span style="font-weight:700;font-size:14px">P${i+1} · ${cat.label}</span>
+          <span style="background:${i===0?'#FFEBEE':'#FFF3CD'};color:${i===0?'var(--fail)':'#856404'};font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto">${issues[cat.id]}个问题</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5">${hints[0] || ''}</div>`;
+      body.appendChild(fc);
+    });
   }
+
+  // Export button
+  const btnSec = document.createElement('div');
+  btnSec.className = 'btn-sec';
+  btnSec.style = 'padding:0 20px 20px';
+  btnSec.innerHTML = '<button class="btn btn-prim" onclick="exportData()">📤 分享周报给团队</button>';
+  body.appendChild(btnSec);
 }
 
-function toggleWeekCat(header) {
-  const body = header.nextElementSibling;
-  if (body && body.classList.contains('week-cat-body')) {
-    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+// ====== NAV ======
+function nav(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-'+screen).classList.add('active');
+  document.querySelectorAll('.bnav .ni').forEach(b => b.classList.remove('active'));
+  const screens = ['home','checklist','team','weekly'];
+  const idx = screens.indexOf(screen);
+  if (idx >= 0) {
+    document.querySelectorAll('.bnav').forEach(nav => {
+      nav.querySelectorAll('.ni')[idx] && nav.querySelectorAll('.ni')[idx].classList.add('active');
+    });
   }
+  if (screen === 'checklist') renderChecklist();
+  if (screen === 'team') renderTeam();
+  if (screen === 'weekly') renderWeekly();
 }
 
-
+// ====== TOAST ======
+let _tt;
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
-}
-</script>
-<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#FFDA1A;padding:12px 20px;align-items:center;gap:12px;z-index:9999;box-shadow:0 -2px 12px rgba(0,0,0,0.15);">
-  <div style="font-size:22px;">📲</div>
-  <div style="flex:1;">
-    <div style="font-size:14px;font-weight:700;color:#111;">安装到手机桌面</div>
-    <div style="font-size:12px;color:#555;">无需应用商店，一键安装</div>
-  </div>
-  <button onclick="installApp()" style="background:#0058A3;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">立即安装</button>
-  <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#555;">✕</button>
-</div>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(r => console.log('SW registered:', r.scope))
-      .catch(e => console.log('SW failed:', e));
-  });
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Install banner
-let deferredPrompt;
+// ====== INSTALL BANNER ======
+let _deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
+  e.preventDefault(); _deferredPrompt = e;
   document.getElementById('install-banner').style.display = 'flex';
 });
 window.addEventListener('appinstalled', () => {
@@ -1806,15 +943,29 @@ window.addEventListener('appinstalled', () => {
   showToast('✅ 已安装到桌面！');
 });
 function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(choice => {
-      if (choice.outcome === 'accepted') showToast('🎉 安装成功！');
-      deferredPrompt = null;
+  if (_deferredPrompt) {
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(() => {
+      _deferredPrompt = null;
       document.getElementById('install-banner').style.display = 'none';
     });
   }
 }
+
+// ====== SW ======
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+window.addEventListener('DOMContentLoaded', init);
 </script>
+
+<!-- Install Banner -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--yellow);padding:12px 16px;align-items:center;gap:10px;z-index:9999;box-shadow:0 -2px 12px rgba(0,0,0,.15)">
+  <div style="font-size:22px">📲</div>
+  <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#111">安装到手机桌面</div><div style="font-size:12px;color:#555">无需应用商店</div></div>
+  <button onclick="installApp()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">安装</button>
+  <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:#555">✕</button>
+</div>
 </body>
 </html>
