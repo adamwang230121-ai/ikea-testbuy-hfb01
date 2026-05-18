@@ -445,6 +445,22 @@ function init() {
   renderHome();
   updateClocks();
   setInterval(updateClocks, 30000);
+
+  // Restore detail page if camera caused a page reload
+  const lastArtno = sessionStorage.getItem('lastArtno');
+  if (lastArtno) {
+    const artno = parseInt(lastArtno) || lastArtno;
+    const found = state.products.find(p => String(p.artno) === String(artno));
+    if (found) openDetail(found.artno);
+  }
+
+  // Re-render photos when page returns from background (e.g. after camera)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && currentArtno) {
+      const ev = state.evals[currentArtno];
+      if (ev) renderPhotos(ev.photos || []);
+    }
+  });
 }
 
 // ====== RENDER HOME ======
@@ -518,6 +534,7 @@ function calcScore(artno) {
 // ====== DETAIL ======
 function openDetail(artno) {
   currentArtno = artno;
+  sessionStorage.setItem('lastArtno', String(artno)); // persist across camera-induced page restores
   const p = state.products.find(x => x.artno === artno);
   const idx = state.products.indexOf(p);
   const ev = state.evals[artno] || {criteria:{}, notes:{}, photos:[], done:false};
@@ -612,19 +629,20 @@ function openCamera() {
 function handlePhotos(event) {
   const files = event.target.files;
   if (!files || !files.length) return;
-  if (!state.evals[currentArtno]) state.evals[currentArtno] = {criteria:{}, notes:{}, photos:[], done:false};
-  const ev = state.evals[currentArtno];
+  const artno = currentArtno; // capture now before any async delay
+  if (!state.evals[artno]) state.evals[artno] = {criteria:{}, notes:{}, photos:[], done:false};
+  const ev = state.evals[artno];
   let loaded = 0;
-  Array.from(files).slice(0, 6).forEach(file => {
+  const total = Math.min(files.length, 6);
+  Array.from(files).slice(0, total).forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
       ev.photos.push(e.target.result);
       loaded++;
-      if (loaded === Math.min(files.length, 6)) {
-        renderPhotos(ev.photos);
-        saveState();
-        showToast('📷 已添加 '+loaded+' 张照片');
-      }
+      // Render immediately after EACH photo — don't wait for all
+      renderPhotos(ev.photos);
+      saveState();
+      if (loaded === total) showToast('📷 已添加 ' + total + ' 张照片');
     };
     reader.readAsDataURL(file);
   });
@@ -917,6 +935,8 @@ function nav(screen) {
       nav.querySelectorAll('.ni')[idx] && nav.querySelectorAll('.ni')[idx].classList.add('active');
     });
   }
+  // Clear saved artno when user deliberately leaves detail
+  if (screen !== 'detail') sessionStorage.removeItem('lastArtno');
   if (screen === 'checklist') renderChecklist();
   if (screen === 'team') renderTeam();
   if (screen === 'weekly') renderWeekly();
