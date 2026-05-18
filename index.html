@@ -722,7 +722,7 @@ Respond ONLY with a JSON object (no markdown, no explanation):
 const AI_PRESETS = {
   openai:   { endpoint: 'https://api.openai.com/v1',              model: 'gpt-4o',                    vision: true,  hint: '获取：platform.openai.com → API Keys' },
   gemini:   { endpoint: '',                                         model: 'gemini-1.5-flash',          vision: true,  hint: '免费获取：aistudio.google.com → Get API Key' },
-  deepseek: { endpoint: 'https://api.deepseek.com/v1',            model: 'deepseek-chat',             vision: false, hint: '获取：platform.deepseek.com → API Keys。注：DeepSeek 标准 API 不支持图片，将基于产品信息做文字分析。' },
+  deepseek: { endpoint: 'https://api.deepseek.com/v1',            model: 'deepseek-v4-pro',           vision: false, hint: '获取：platform.deepseek.com → API Keys。默认使用 deepseek-v4-pro。注：DeepSeek 标准 API 不支持图片输入，将基于产品信息做文字分析评估。' },
   qwen:     { endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-vl-plus', vision: true,  hint: '获取：dashscope.aliyun.com → API Key 管理' },
   zhipu:    { endpoint: 'https://open.bigmodel.cn/api/paas/v4',   model: 'glm-4v',                    vision: true,  hint: '获取：open.bigmodel.cn → API Keys' },
   custom:   { endpoint: '',                                         model: '',                          vision: true,  hint: '输入任何 OpenAI 兼容接口的 Base URL 和模型名称' },
