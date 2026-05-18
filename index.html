@@ -382,19 +382,31 @@ body{font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background:#EB
     <div class="field">
       <label>AI 提供商</label>
       <select id="ai-provider" onchange="saveSettings()">
-        <option value="openai">OpenAI (GPT-4o)</option>
+        <option value="openai">OpenAI (GPT-4o Vision)</option>
         <option value="gemini">Google Gemini 1.5 Flash（免费）</option>
+        <option value="deepseek">DeepSeek（文字分析）</option>
+        <option value="qwen">通义千问 Qwen-VL（阿里）</option>
+        <option value="zhipu">智谱 GLM-4V（清华）</option>
+        <option value="custom">自定义 OpenAI 兼容接口</option>
       </select>
+    </div>
+    <div class="field" id="field-endpoint" style="display:none">
+      <label>API 地址（Base URL）</label>
+      <input type="url" id="ai-endpoint" placeholder="https://api.example.com/v1" oninput="saveSettings()">
+    </div>
+    <div class="field" id="field-model" style="display:none">
+      <label>模型名称</label>
+      <input type="text" id="ai-model" placeholder="例如：deepseek-chat" oninput="saveSettings()">
     </div>
     <div class="field">
       <label id="key-label">API Key</label>
       <input type="password" id="ai-key" placeholder="sk-..." oninput="saveSettings()" autocomplete="off">
     </div>
-    <div id="key-hint" style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6"></div>
-    <div style="margin-top:16px;padding:12px;background:#E8F4FD;border-radius:8px;font-size:12px;color:var(--blue);line-height:1.6">
+    <div id="key-hint" style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;padding:10px;background:var(--gray);border-radius:8px"></div>
+    <div style="margin-top:12px;padding:12px;background:#E8F4FD;border-radius:8px;font-size:12px;color:var(--blue);line-height:1.6">
       🔒 API Key 仅保存在你自己的手机本地（localStorage），不会发送给任何第三方
     </div>
-    <button class="btn btn-prim" style="margin-top:16px" onclick="testAPIKey()">🔍 测试连接</button>
+    <button class="btn btn-prim" style="margin-top:14px" onclick="testAPIKey()">🔍 测试连接</button>
     <button class="btn btn-out" style="margin-top:8px" onclick="closeSettings()">关闭</button>
   </div>
 </div>
@@ -706,30 +718,64 @@ Respond ONLY with a JSON object (no markdown, no explanation):
   "top_issues": ["<actionable improvement 1 in Chinese>", "<actionable improvement 2 in Chinese>"]
 }`;
 
+// Provider presets: endpoint, model, supportsVision
+const AI_PRESETS = {
+  openai:   { endpoint: 'https://api.openai.com/v1',              model: 'gpt-4o',                    vision: true,  hint: '获取：platform.openai.com → API Keys' },
+  gemini:   { endpoint: '',                                         model: 'gemini-1.5-flash',          vision: true,  hint: '免费获取：aistudio.google.com → Get API Key' },
+  deepseek: { endpoint: 'https://api.deepseek.com/v1',            model: 'deepseek-chat',             vision: false, hint: '获取：platform.deepseek.com → API Keys。注：DeepSeek 标准 API 不支持图片，将基于产品信息做文字分析。' },
+  qwen:     { endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-vl-plus', vision: true,  hint: '获取：dashscope.aliyun.com → API Key 管理' },
+  zhipu:    { endpoint: 'https://open.bigmodel.cn/api/paas/v4',   model: 'glm-4v',                    vision: true,  hint: '获取：open.bigmodel.cn → API Keys' },
+  custom:   { endpoint: '',                                         model: '',                          vision: true,  hint: '输入任何 OpenAI 兼容接口的 Base URL 和模型名称' },
+};
+
 function getAISettings() {
+  const provider = localStorage.getItem('ai_provider') || 'openai';
+  const preset = AI_PRESETS[provider] || AI_PRESETS.openai;
   return {
-    provider: localStorage.getItem('ai_provider') || 'openai',
-    key: localStorage.getItem('ai_key') || ''
+    provider,
+    key:      localStorage.getItem('ai_key') || '',
+    endpoint: localStorage.getItem('ai_endpoint') || preset.endpoint,
+    model:    localStorage.getItem('ai_model')    || preset.model,
+    vision:   preset.vision,
   };
 }
+
 function saveSettings() {
-  localStorage.setItem('ai_provider', document.getElementById('ai-provider').value);
-  localStorage.setItem('ai_key', document.getElementById('ai-key').value);
+  const provider = document.getElementById('ai-provider').value;
+  localStorage.setItem('ai_provider',  provider);
+  localStorage.setItem('ai_key',       document.getElementById('ai-key').value);
+  localStorage.setItem('ai_endpoint',  document.getElementById('ai-endpoint').value);
+  localStorage.setItem('ai_model',     document.getElementById('ai-model').value);
   updateKeyHint();
 }
+
 function updateKeyHint() {
   const provider = document.getElementById('ai-provider').value;
-  const hints = {
-    openai: '获取地址：platform.openai.com → API Keys。需要 GPT-4o 访问权限。',
-    gemini: '获取地址：aistudio.google.com → Get API Key。免费使用 Gemini 1.5 Flash。'
-  };
-  document.getElementById('key-hint').textContent = hints[provider] || '';
-  document.getElementById('key-label').textContent = provider === 'gemini' ? 'Gemini API Key' : 'OpenAI API Key';
+  const preset = AI_PRESETS[provider] || {};
+  // Show/hide custom fields
+  const showCustom = provider === 'custom';
+  const showModel  = provider === 'custom' || provider === 'deepseek';
+  document.getElementById('field-endpoint').style.display = showCustom ? '' : 'none';
+  document.getElementById('field-model').style.display    = showModel  ? '' : 'none';
+  document.getElementById('key-hint').textContent = preset.hint || '';
+  document.getElementById('key-label').textContent = 'API Key';
+  // Pre-fill endpoint/model for presets
+  if (provider !== 'custom') {
+    if (!localStorage.getItem('ai_endpoint') || document.getElementById('ai-endpoint').value === '') {
+      document.getElementById('ai-endpoint').value = preset.endpoint || '';
+    }
+    if (!localStorage.getItem('ai_model') || document.getElementById('ai-model').value === '') {
+      document.getElementById('ai-model').value = preset.model || '';
+    }
+  }
 }
+
 function openSettings() {
   const s = getAISettings();
   document.getElementById('ai-provider').value = s.provider;
-  document.getElementById('ai-key').value = s.key;
+  document.getElementById('ai-key').value      = s.key;
+  document.getElementById('ai-endpoint').value = s.endpoint;
+  document.getElementById('ai-model').value    = s.model;
   updateKeyHint();
   document.getElementById('settings-modal').classList.add('open');
 }
@@ -741,33 +787,39 @@ async function testAPIKey() {
   if (!s.key) { showToast('请先输入 API Key'); return; }
   showToast('🔍 测试中…');
   try {
-    const ok = await callVisionAPI(['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='], 'Reply with: {"score":100,"presented":{"status":"ok","note":"test"},"condition":{"status":"ok","note":"test"},"priced":{"status":"ok","note":"test"},"buying":{"status":"ok","note":"test"},"available":{"status":"ok","note":"test"},"summary":"test","top_issues":[]}');
-    if (ok) showToast('✅ API Key 有效，连接正常！');
-  } catch(e) { showToast('❌ 连接失败：' + e.message.slice(0,40)); }
+    const testPrompt = 'Reply ONLY with valid JSON: {"score":99,"presented":{"status":"ok","note":"test ok"},"condition":{"status":"ok","note":"test ok"},"priced":{"status":"ok","note":"test ok"},"buying":{"status":"ok","note":"test ok"},"available":{"status":"ok","note":"test ok"},"summary":"connection test","top_issues":[]}';
+    await callVisionAPI([], testPrompt);
+    showToast('✅ 连接成功！API Key 有效');
+  } catch(e) { showToast('❌ ' + e.message.slice(0, 50)); }
 }
 
 async function callVisionAPI(base64Images, prompt) {
   const s = getAISettings();
   if (!s.key) throw new Error('未配置 API Key，请点击 ⚙️ 设置');
-
-  if (s.provider === 'gemini') {
-    return await callGemini(base64Images, prompt, s.key);
-  } else {
-    return await callOpenAI(base64Images, prompt, s.key);
-  }
+  if (s.provider === 'gemini') return await callGemini(base64Images, prompt, s.key, s.model);
+  // All others use OpenAI-compatible format
+  return await callOpenAICompat(base64Images, prompt, s.key, s.endpoint, s.model, s.vision);
 }
 
-async function callOpenAI(images, prompt, key) {
-  const content = [{ type: 'text', text: prompt }];
-  images.slice(0, 4).forEach(img => {
-    content.push({ type: 'image_url', image_url: { url: img, detail: 'low' } });
-  });
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+async function callOpenAICompat(images, prompt, key, endpoint, model, supportsVision) {
+  const baseUrl = (endpoint || 'https://api.openai.com/v1').replace(/\/$/, '');
+  // Build message content — skip images if provider doesn't support vision
+  let content;
+  if (supportsVision && images.length > 0) {
+    content = [{ type: 'text', text: prompt }];
+    images.slice(0, 4).forEach(img => {
+      content.push({ type: 'image_url', image_url: { url: img, detail: 'low' } });
+    });
+  } else {
+    // Text-only fallback: embed product context in text
+    content = prompt + (images.length ? '\n（注：此提供商不支持图片，请根据产品信息和IKEA标准进行文字分析评估）' : '');
+  }
+  const res = await fetch(baseUrl + '/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 800,
+      model: model || 'gpt-4o',
+      max_tokens: 900,
       messages: [
         { role: 'system', content: AI_SYSTEM_PROMPT },
         { role: 'user', content }
@@ -776,32 +828,36 @@ async function callOpenAI(images, prompt, key) {
   });
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
-    throw new Error(err.error?.message || 'OpenAI API 错误 ' + res.status);
+    throw new Error(err.error?.message || `API 错误 ${res.status}`);
   }
   const data = await res.json();
-  return JSON.parse(data.choices[0].message.content);
+  const text = data.choices[0].message.content;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('AI 返回格式异常，请重试');
+  return JSON.parse(jsonMatch[0]);
 }
 
-async function callGemini(images, prompt, key) {
-  const parts = [{ text: AI_SYSTEM_PROMPT + '\n\nProduct photos attached. Evaluate now.' }];
+async function callGemini(images, prompt, key, model) {
+  const m = model || 'gemini-1.5-flash';
+  const parts = [{ text: AI_SYSTEM_PROMPT + '\n\n' + prompt }];
   images.slice(0, 4).forEach(img => {
     const [header, b64] = img.split(',');
     const mimeType = header.match(/:(.*?);/)[1];
     parts.push({ inline_data: { mime_type: mimeType, data: b64 } });
   });
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contents: [{ parts }] })
   });
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
-    throw new Error(err.error?.message || 'Gemini API 错误 ' + res.status);
+    throw new Error(err.error?.message || `Gemini 错误 ${res.status}`);
   }
   const data = await res.json();
   const text = data.candidates[0].content.parts[0].text;
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('AI 返回格式异常');
+  if (!jsonMatch) throw new Error('AI 返回格式异常，请重试');
   return JSON.parse(jsonMatch[0]);
 }
 
