@@ -1,0 +1,1820 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>IKEA Test Buy</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Test Buy">
+<meta name="theme-color" content="#0058A3">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  :root {
+    --ikea-blue: #0058A3;
+    --ikea-yellow: #FFDA1A;
+    --ikea-dark: #111111;
+    --ikea-gray: #F5F5F5;
+    --ikea-border: #DFDFDF;
+    --ikea-text: #333;
+    --ikea-muted: #767676;
+    --ok: #168740;
+    --warn: #E67700;
+    --fail: #CC0008;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+    background: #EBEBEB;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 20px 10px;
+  }
+  .phone {
+    width: 390px;
+    min-height: 844px;
+    background: white;
+    border-radius: 40px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Status bar */
+  .status-bar {
+    background: var(--ikea-blue);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* Header */
+  .header {
+    background: var(--ikea-blue);
+    color: white;
+    padding: 14px 20px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-back {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.85;
+  }
+  .header-title { font-size: 18px; font-weight: 700; flex: 1; }
+  .header-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+  .logo-badge {
+    background: var(--ikea-yellow);
+    color: var(--ikea-blue);
+    font-weight: 900;
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Screen management */
+  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* Scrollable content */
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 80px;
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--ikea-border);
+    display: flex;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px 14px;
+    cursor: pointer;
+    color: var(--ikea-muted);
+    font-size: 11px;
+    gap: 4px;
+    transition: color 0.2s;
+    border: none;
+    background: none;
+  }
+  .nav-item .icon { font-size: 22px; }
+  .nav-item.active { color: var(--ikea-blue); }
+  .nav-item.active .icon { transform: scale(1.1); }
+
+  /* Hero section */
+  .hero {
+    background: linear-gradient(135deg, var(--ikea-blue) 60%, #003E7A);
+    color: white;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 150px; height: 150px;
+    background: var(--ikea-yellow);
+    border-radius: 50%;
+    opacity: 0.1;
+  }
+  .hero-date { font-size: 13px; opacity: 0.75; margin-bottom: 4px; }
+  .hero-title { font-size: 22px; font-weight: 800; }
+  .hero-subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .hero-stats {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+    flex: 1;
+    backdrop-filter: blur(4px);
+  }
+  .stat-num { font-size: 24px; font-weight: 800; }
+  .stat-label { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+  /* Progress bar */
+  .progress-section { padding: 16px 20px 8px; }
+  .progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .progress-label { font-size: 13px; font-weight: 600; color: var(--ikea-text); }
+  .progress-pct { font-size: 13px; font-weight: 700; color: var(--ikea-blue); }
+  .progress-bar {
+    height: 8px;
+    background: var(--ikea-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ikea-blue), #0080FF);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ikea-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 16px 20px 8px;
+  }
+
+  /* Product card */
+  .product-card {
+    margin: 0 16px 10px;
+    background: white;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--ikea-border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.1s;
+  }
+  .product-card:active { transform: scale(0.98); }
+  .product-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .product-card.completed { border-color: var(--ok); background: #F0FAF3; }
+  .product-card.in-progress { border-color: var(--warn); }
+
+  .card-body { display: flex; padding: 12px; gap: 12px; align-items: flex-start; }
+  .card-rank {
+    width: 32px; height: 32px;
+    background: var(--ikea-blue);
+    color: white;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .card-rank.top { background: #E8700A; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-size: 14px; font-weight: 700; color: var(--ikea-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-artno { font-size: 12px; color: var(--ikea-muted); margin-top: 2px; }
+  .card-price { font-size: 15px; font-weight: 800; color: var(--ikea-blue); margin-top: 4px; }
+  .card-badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .badge-top { background: #FFF3E0; color: #E67700; }
+  .badge-running { background: #E8F4FD; color: var(--ikea-blue); }
+  .badge-news { background: #FFF0F0; color: var(--fail); }
+  .badge-done { background: #E8F5E9; color: var(--ok); }
+  .badge-warn { background: #FFF3CD; color: #856404; }
+  .card-status {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .dot-done { background: var(--ok); }
+  .dot-progress { background: var(--warn); }
+  .dot-pending { background: var(--ikea-border); }
+
+  .card-footer {
+    background: var(--ikea-gray);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ikea-muted);
+  }
+  .issues-count {
+    display: flex; align-items: center; gap: 4px;
+    color: var(--fail);
+    font-weight: 600;
+  }
+
+  /* ---- Product Detail Screen ---- */
+  .detail-hero {
+    background: var(--ikea-gray);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--ikea-border);
+  }
+  .detail-artno { font-size: 12px; color: var(--ikea-muted); }
+  .detail-name { font-size: 18px; font-weight: 800; margin: 6px 0; }
+  .detail-price { font-size: 22px; font-weight: 900; color: var(--ikea-blue); }
+  .detail-meta { font-size: 13px; color: var(--ikea-muted); margin-top: 4px; }
+
+  /* Criteria list */
+  .criteria-section { padding: 16px 20px; }
+  .criteria-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .criteria-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1.5px solid var(--ikea-border);
+    background: white;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .criteria-item.ok { border-color: var(--ok); background: #F0FAF3; }
+  .criteria-item.fail { border-color: var(--fail); background: #FFF5F5; }
+  .criteria-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .criteria-text { flex: 1; }
+  .criteria-label { font-size: 14px; font-weight: 600; }
+  .criteria-sub { font-size: 12px; color: var(--ikea-muted); margin-top: 3px; }
+  .criteria-result {
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .result-ok { background: #E8F5E9; color: var(--ok); }
+  .result-fail { background: #FFEBEE; color: var(--fail); }
+  .result-pending { background: var(--ikea-gray); color: var(--ikea-muted); }
+
+  /* Photo upload area */
+  .upload-area {
+    margin: 0 20px 16px;
+    border: 2px dashed var(--ikea-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    background: var(--ikea-gray);
+  }
+  .upload-area:hover { border-color: var(--ikea-blue); }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; font-weight: 600; color: var(--ikea-blue); }
+  .upload-sub { font-size: 12px; color: var(--ikea-muted); margin-top: 4px; }
+  .photos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 0 20px 16px;
+  }
+  .photo-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--ikea-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 10px;
+    text-align: center;
+    padding: 3px;
+  }
+
+  /* AI Analysis */
+  .ai-section {
+    margin: 0 20px 16px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1.5px solid var(--ikea-blue);
+  }
+  .ai-header {
+    background: var(--ikea-blue);
+    color: white;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ai-body { padding: 14px 16px; }
+  .ai-score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .ai-score {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--warn);
+  }
+  .ai-score-info { flex: 1; }
+  .ai-score-label { font-size: 13px; color: var(--ikea-muted); }
+  .ai-score-bar { height: 6px; background: var(--ikea-border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .ai-score-fill { height: 100%; border-radius: 3px; background: var(--warn); width: 60%; }
+  .ai-issues { display: flex; flex-direction: column; gap: 8px; }
+  .ai-issue {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 10px;
+    background: #FFF9F0;
+    border-radius: 8px;
+    border-left: 3px solid var(--warn);
+  }
+  .ai-issue-icon { font-size: 16px; flex-shrink: 0; }
+  .ai-issue-text { font-size: 13px; line-height: 1.5; }
+  .ai-issue-tag {
+    font-size: 11px;
+    background: #FFE8C0;
+    color: #8B5000;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: inline-block;
+  }
+
+  /* ---- Checklist Screen ---- */
+  .checklist-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ikea-border);
+  }
+  .checklist-summary {
+    display: flex;
+    gap: 10px;
+  }
+  .summary-pill {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  .pill-total { background: var(--ikea-gray); color: var(--ikea-text); }
+  .pill-done { background: #E8F5E9; color: var(--ok); }
+  .pill-pending { background: #FFF3CD; color: #856404; }
+  .summary-pill .num { font-size: 22px; display: block; }
+  .summary-pill .lbl { font-size: 11px; font-weight: 600; }
+
+  .checklist-group { margin-bottom: 4px; }
+  .group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ikea-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .group-badge {
+    background: var(--ikea-border);
+    color: var(--ikea-muted);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--ikea-gray);
+    transition: background 0.15s;
+  }
+  .check-item:active { background: var(--ikea-gray); }
+  .checkbox {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--ikea-border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.2s;
+  }
+  .checkbox.checked {
+    background: var(--ok);
+    border-color: var(--ok);
+  }
+  .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .check-content { flex: 1; }
+  .check-text { font-size: 14px; color: var(--ikea-text); line-height: 1.4; }
+  .check-text.done { text-decoration: line-through; color: var(--ikea-muted); }
+  .check-meta { font-size: 12px; color: var(--ikea-muted); margin-top: 4px; display: flex; gap: 8px; }
+  .check-priority {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .priority-high { background: #FFEBEE; color: var(--fail); }
+  .priority-med { background: #FFF3CD; color: #856404; }
+
+  /* ---- Team Screen ---- */
+  .team-overview {
+    margin: 16px;
+    background: var(--ikea-gray);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .team-overview-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .ring-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .ring-chart {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(var(--ok) 0% 40%, var(--warn) 40% 70%, var(--ikea-border) 70% 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .ring-inner {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: white;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800;
+  }
+  .ring-inner span { font-size: 10px; font-weight: 600; color: var(--ikea-muted); }
+  .ring-legend { flex: 1; }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .team-member {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ikea-border);
+  }
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+  .member-info { flex: 1; }
+  .member-name { font-size: 14px; font-weight: 700; }
+  .member-status { font-size: 12px; color: var(--ikea-muted); margin-top: 2px; }
+  .member-progress { text-align: right; }
+  .member-pct { font-size: 16px; font-weight: 800; color: var(--ikea-blue); }
+  .member-tasks { font-size: 11px; color: var(--ikea-muted); }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--ikea-gray);
+  }
+  .activity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .activity-dot.warn { background: var(--warn); }
+  .activity-text { font-size: 13px; color: var(--ikea-text); line-height: 1.4; }
+  .activity-time { font-size: 11px; color: var(--ikea-muted); margin-top: 2px; }
+
+  /* Buttons */
+  .btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    width: 100%;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--ikea-blue); color: white; }
+  .btn-yellow { background: var(--ikea-yellow); color: var(--ikea-blue); }
+  .btn-outline { background: white; color: var(--ikea-blue); border: 2px solid var(--ikea-blue); }
+  .btn-success { background: var(--ok); color: white; }
+  .btn-section { padding: 0 20px 16px; }
+
+  /* Notification banner */
+  .notif-banner {
+    background: var(--ikea-yellow);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ikea-dark);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ikea-dark);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Chip tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    overflow-x: auto;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 2px solid var(--ikea-border);
+    background: white;
+    color: var(--ikea-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab.active { background: var(--ikea-blue); border-color: var(--ikea-blue); color: white; }
+
+  /* Score gauge */
+  .score-summary {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 0 20px 16px;
+  }
+  .score-col {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .score-icon { font-size: 18px; }
+  .score-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+  }
+  .score-ok { background: #E8F5E9; color: var(--ok); }
+  .score-fail { background: #FFEBEE; color: var(--fail); }
+  .score-label { font-size: 10px; color: var(--ikea-muted); text-align: center; line-height: 1.3; }
+
+  .divider { height: 8px; background: var(--ikea-gray); }
+</style>
+</head>
+<body>
+
+<div class="phone" id="app">
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ============ SCREEN: HOME ============ -->
+  <div class="screen active" id="screen-home">
+    <div class="status-bar">
+      <span>9:30</span>
+      <span><span class="logo-badge">IKEA</span></span>
+      <span>⚡ 85%</span>
+    </div>
+    <div class="header">
+      <div>
+        <div class="header-title">Test Buy</div>
+        <div class="header-sub">今日任务 · HFB01 起居家具</div>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+      <div class="notif-banner">
+        🔔 今日10个产品已自动选出，请开始 Test Buy！
+      </div>
+
+      <div class="hero">
+        <div class="hero-date">2026年5月18日 · 星期一</div>
+        <div class="hero-title">今日 Test Buy</div>
+        <div class="hero-subtitle">包含 5 个 Top 产品 · 系统自动选取</div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <div class="stat-num">3</div>
+            <div class="stat-label">已完成</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">2</div>
+            <div class="stat-label">进行中</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">5</div>
+            <div class="stat-label">待开始</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">今日整体进度</span>
+          <span class="progress-pct">30%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">全部 (10)</div>
+        <div class="tab">待开始 (5)</div>
+        <div class="tab">进行中 (2)</div>
+        <div class="tab">已完成 (3)</div>
+      </div>
+
+      <div class="section-title">⭐ Top 产品优先</div>
+
+      <!-- Product 1 - TOP, completed -->
+      <div class="product-card completed" onclick="openDetail(0)">
+        <div class="card-body">
+          <div class="card-rank top">1</div>
+          <div class="card-info">
+            <div class="card-name">RULLERUM 鲁勒鲁姆 N 双人沙发</div>
+            <div class="card-artno">Art# 10594232</div>
+            <div class="card-price">¥5,999</div>
+            <div class="card-badges">
+              <span class="badge badge-top">⭐ Top产品</span>
+              <span class="badge badge-running">Running</span>
+              <span class="badge badge-done">✓ 已完成</span>
+            </div>
+          </div>
+          <div class="card-status">
+            <div class="status-dot dot-done"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>评分：60/100</span>
+          <span class="issues-count">⚠ 3 项问题</span>
+        </div>
+      </div>
+
+      <!-- Product 2 - TOP, in progress -->
+      <div class="product-card in-progress" onclick="openDetail(1)">
+        <div class="card-body">
+          <div class="card-rank top">2</div>
+          <div class="card-info">
+            <div class="card-name">KIVIK 奇维 N 三人沙发框架</div>
+            <div class="card-artno">Art# 10519365</div>
+            <div class="card-price">¥1,700</div>
+            <div class="card-badges">
+              <span class="badge badge-top">⭐ Top产品</span>
+              <span class="badge badge-running">Running</span>
+              <span class="badge badge-warn">📷 上传中</span>
+            </div>
+          </div>
+          <div class="card-status">
+            <div class="status-dot dot-progress"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>已上传 2 张照片</span>
+          <span>等待AI分析…</span>
+        </div>
+      </div>
+
+      <!-- Product 3 - TOP, completed -->
+      <div class="product-card completed" onclick="openDetail(2)">
+        <div class="card-body">
+          <div class="card-rank top">3</div>
+          <div class="card-info">
+            <div class="card-name">HAVBERG 哈伯格 转椅</div>
+            <div class="card-artno">Art# 70531656</div>
+            <div class="card-price">¥2,499</div>
+            <div class="card-badges">
+              <span class="badge badge-top">⭐ Top产品</span>
+              <span class="badge badge-running">Running</span>
+              <span class="badge badge-done">✓ 已完成</span>
+            </div>
+          </div>
+          <div class="card-status">
+            <div class="status-dot dot-done"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>评分：85/100</span>
+          <span style="color:var(--ok); font-weight:600;">✓ 1 项问题</span>
+        </div>
+      </div>
+
+      <!-- Product 4 - TOP, in progress -->
+      <div class="product-card in-progress" onclick="openDetail(3)">
+        <div class="card-body">
+          <div class="card-rank top">4</div>
+          <div class="card-info">
+            <div class="card-name">SÖDERHAMN 索德汉 3人座框架</div>
+            <div class="card-artno">Art# 20223919</div>
+            <div class="card-price">¥2,299</div>
+            <div class="card-badges">
+              <span class="badge badge-top">⭐ Top产品</span>
+              <span class="badge badge-running">Running</span>
+              <span class="badge badge-warn">📷 1张照片</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-progress"></div></div>
+        </div>
+      </div>
+
+      <!-- Product 5 - TOP, completed -->
+      <div class="product-card completed" onclick="openDetail(4)">
+        <div class="card-body">
+          <div class="card-rank top">5</div>
+          <div class="card-info">
+            <div class="card-name">BORGEBY 伯格比 茶几 70</div>
+            <div class="card-artno">Art# 10500356</div>
+            <div class="card-price">¥599</div>
+            <div class="card-badges">
+              <span class="badge badge-top">⭐ Top产品</span>
+              <span class="badge badge-running">Running</span>
+              <span class="badge badge-done">✓ 已完成</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-done"></div></div>
+        </div>
+        <div class="card-footer">
+          <span>评分：90/100</span>
+          <span style="color:var(--ok); font-weight:600;">✓ 无问题</span>
+        </div>
+      </div>
+
+      <div class="section-title">📦 其他产品</div>
+
+      <div class="product-card" onclick="openDetail(5)">
+        <div class="card-body">
+          <div class="card-rank">6</div>
+          <div class="card-info">
+            <div class="card-name">LANDSKRONA 兰德克纳 三人沙发</div>
+            <div class="card-artno">Art# 10413415</div>
+            <div class="card-price">¥3,299</div>
+            <div class="card-badges">
+              <span class="badge badge-running">Running</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-pending"></div></div>
+        </div>
+      </div>
+
+      <div class="product-card" onclick="openDetail(6)">
+        <div class="card-body">
+          <div class="card-rank">7</div>
+          <div class="card-info">
+            <div class="card-name">VIMLE 维姆勒 三人沙发框架</div>
+            <div class="card-artno">Art# 90488794</div>
+            <div class="card-price">¥2,199</div>
+            <div class="card-badges">
+              <span class="badge badge-running">Running</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-pending"></div></div>
+        </div>
+      </div>
+
+      <div class="product-card" onclick="openDetail(7)">
+        <div class="card-body">
+          <div class="card-rank">8</div>
+          <div class="card-info">
+            <div class="card-name">POÄNG 波昂 N 扶手椅垫</div>
+            <div class="card-artno">Art# 50550858</div>
+            <div class="card-price">¥299</div>
+            <div class="card-badges">
+              <span class="badge badge-running">Running</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-pending"></div></div>
+        </div>
+      </div>
+
+      <div class="product-card" onclick="openDetail(8)">
+        <div class="card-body">
+          <div class="card-rank">9</div>
+          <div class="card-info">
+            <div class="card-name">FRIHETEN 弗瑞顿 3人沙发床</div>
+            <div class="card-artno">Art# 40551226</div>
+            <div class="card-price">¥3,999</div>
+            <div class="card-badges">
+              <span class="badge badge-running">Running</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-pending"></div></div>
+        </div>
+      </div>
+
+      <div class="product-card" onclick="openDetail(9)">
+        <div class="card-body">
+          <div class="card-rank">10</div>
+          <div class="card-info">
+            <div class="card-name">JÄTTEBO 耶特博 1.5人座储物</div>
+            <div class="card-artno">Art# 50528914</div>
+            <div class="card-price">¥1,799</div>
+            <div class="card-badges">
+              <span class="badge badge-running">Running</span>
+            </div>
+          </div>
+          <div class="card-status"><div class="status-dot dot-pending"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="showScreen('home')">
+        <span class="icon">🏠</span>今日任务
+      </button>
+      <button class="nav-item" onclick="showScreen('checklist')">
+        <span class="icon">✅</span>改进清单
+      </button>
+      <button class="nav-item" onclick="showScreen('team')">
+        <span class="icon">👥</span>团队进展
+      </button>
+      <button class="nav-item" onclick="showScreen('weekly')">
+        <span class="icon">📊</span>周报
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ============ SCREEN: PRODUCT DETAIL ============ -->
+  <div class="screen" id="screen-detail">
+    <div class="status-bar">
+      <span>9:47</span>
+      <span><span class="logo-badge">IKEA</span></span>
+      <span>⚡ 85%</span>
+    </div>
+    <div class="header">
+      <div class="header-back" onclick="showScreen('home')">←</div>
+      <div>
+        <div class="header-title">产品 Test Buy</div>
+        <div class="header-sub">第 1 / 10 个产品</div>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+      <div class="detail-hero">
+        <div class="detail-artno">Art# 10594232 · HFB01 · PA 111</div>
+        <div class="detail-name">RULLERUM 鲁勒鲁姆 N 双人沙发电动躺椅</div>
+        <div class="detail-price">¥5,999</div>
+        <div class="detail-meta">哥兰/邦斯塔金棕 · Running · ⭐ Top产品</div>
+      </div>
+
+      <!-- Score overview -->
+      <div class="section-title">📊 评估结果概览</div>
+      <div class="score-summary">
+        <div class="score-col">
+          <div class="score-icon">👁</div>
+          <div class="score-circle score-ok">✓</div>
+          <div class="score-label">产品<br>已陈列</div>
+        </div>
+        <div class="score-col">
+          <div class="score-icon">✨</div>
+          <div class="score-circle score-fail">✗</div>
+          <div class="score-label">状态<br>完好</div>
+        </div>
+        <div class="score-col">
+          <div class="score-icon">🏷</div>
+          <div class="score-circle score-fail">✗</div>
+          <div class="score-label">价格<br>信息</div>
+        </div>
+        <div class="score-col">
+          <div class="score-icon">🛒</div>
+          <div class="score-circle score-ok">✓</div>
+          <div class="score-label">购买<br>引导</div>
+        </div>
+        <div class="score-col">
+          <div class="score-icon">📦</div>
+          <div class="score-circle score-fail">✗</div>
+          <div class="score-label">产品<br>可购买</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Photo upload -->
+      <div class="section-title">📷 上传现场照片</div>
+      <div class="photos-grid">
+        <div class="photo-thumb" style="background:#E3F2FD">
+          <span>🛋</span>
+          <div class="photo-label">整体陈列</div>
+        </div>
+        <div class="photo-thumb" style="background:#FFF3E0">
+          <span>🏷</span>
+          <div class="photo-label">价格标签</div>
+        </div>
+        <div class="photo-thumb" style="background:#F3E5F5">
+          <span>📦</span>
+          <div class="photo-label">取货区域</div>
+        </div>
+      </div>
+      <div class="upload-area" onclick="showToast('📷 正在打开相机…')">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">拍照上传</div>
+        <div class="upload-sub">建议拍摄：陈列全景、价格标签、产品细节、取货位置</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- AI Analysis -->
+      <div class="section-title">🤖 AI 分析结果</div>
+      <div class="ai-section">
+        <div class="ai-header">🤖 AI 评估 — 基于 Merchandising Basics</div>
+        <div class="ai-body">
+          <div class="ai-score-row">
+            <div class="ai-score">60</div>
+            <div class="ai-score-info">
+              <div class="ai-score-label">综合评分（满分100）</div>
+              <div class="ai-score-bar">
+                <div class="ai-score-fill" style="width:60%; background:var(--warn)"></div>
+              </div>
+              <div style="font-size:12px; color:var(--ikea-muted); margin-top:4px">发现 3 项问题 · 需要改进</div>
+            </div>
+          </div>
+          <div class="ai-issues">
+            <div class="ai-issue">
+              <div class="ai-issue-icon">✨</div>
+              <div>
+                <div class="ai-issue-tag">产品状态</div>
+                <div class="ai-issue-text">坐垫右侧有明显污迹，靠背摆放不整齐，未达到「始终完好如新」标准</div>
+              </div>
+            </div>
+            <div class="ai-issue">
+              <div class="ai-issue-icon">🏷</div>
+              <div>
+                <div class="ai-issue-tag">价格标签</div>
+                <div class="ai-issue-text">价格标签被遮挡，材质保养信息不完整，缺少尺寸标注（宽×深×高）</div>
+              </div>
+            </div>
+            <div class="ai-issue">
+              <div class="ai-issue-icon">📦</div>
+              <div>
+                <div class="ai-issue-tag">库存可用性</div>
+                <div class="ai-issue-text">自助取货区库存显示为0，未提供可订货/送货的替代说明</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Criteria detail -->
+      <div class="criteria-section">
+        <div class="criteria-title">5大评估维度详情</div>
+
+        <div class="criteria-item ok">
+          <div class="criteria-icon">👁</div>
+          <div class="criteria-text">
+            <div class="criteria-label">1. 产品是否已陈列？</div>
+            <div class="criteria-sub">产品在正确展示区，客户可见并可体验</div>
+          </div>
+          <span class="criteria-result result-ok">OK</span>
+        </div>
+
+        <div class="criteria-item fail" onclick="showToast('点击查看详情')">
+          <div class="criteria-icon">✨</div>
+          <div class="criteria-text">
+            <div class="criteria-label">2. 产品状态是否完好？</div>
+            <div class="criteria-sub">清洁·正确组装·符合安全标准</div>
+          </div>
+          <span class="criteria-result result-fail">需改进</span>
+        </div>
+
+        <div class="criteria-item fail">
+          <div class="criteria-icon">🏷</div>
+          <div class="criteria-text">
+            <div class="criteria-label">3. 价格与产品信息是否清晰？</div>
+            <div class="criteria-sub">名称·价格·尺寸·材质·客户利益·保养说明</div>
+          </div>
+          <span class="criteria-result result-fail">需改进</span>
+        </div>
+
+        <div class="criteria-item ok">
+          <div class="criteria-icon">🛒</div>
+          <div class="criteria-text">
+            <div class="criteria-label">4. 购买引导是否清晰？</div>
+            <div class="criteria-sub">取货位置·购买方式·QR码有效</div>
+          </div>
+          <span class="criteria-result result-ok">OK</span>
+        </div>
+
+        <div class="criteria-item fail">
+          <div class="criteria-icon">📦</div>
+          <div class="criteria-text">
+            <div class="criteria-label">5. 产品是否可购买？</div>
+            <div class="criteria-sub">现货取走 / 可订购说明清晰</div>
+          </div>
+          <span class="criteria-result result-fail">需改进</span>
+        </div>
+      </div>
+
+      <div class="btn-section">
+        <button class="btn btn-primary" onclick="showToast('✅ 已添加到改进清单')">
+          ➕ 将改进项加入清单
+        </button>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
+      <button class="nav-item" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
+      <button class="nav-item" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
+      <button class="nav-item" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
+    </div>
+  </div>
+
+
+  <!-- ============ SCREEN: CHECKLIST ============ -->
+  <div class="screen" id="screen-checklist">
+    <div class="status-bar">
+      <span>10:15</span>
+      <span><span class="logo-badge">IKEA</span></span>
+      <span>⚡ 85%</span>
+    </div>
+    <div class="header">
+      <div>
+        <div class="header-title">改进清单</div>
+        <div class="header-sub">2026年5月18日 · 10个产品</div>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+      <div class="checklist-header">
+        <div class="checklist-summary">
+          <div class="summary-pill pill-total">
+            <span class="num">12</span>
+            <span class="lbl">全部问题</span>
+          </div>
+          <div class="summary-pill pill-done">
+            <span class="num">4</span>
+            <span class="lbl">已解决</span>
+          </div>
+          <div class="summary-pill pill-pending">
+            <span class="num">8</span>
+            <span class="lbl">待处理</span>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="progress-bar" style="height:10px">
+            <div class="progress-fill" style="width:33%; background:var(--ok)"></div>
+          </div>
+          <div style="font-size:12px; color:var(--ikea-muted); margin-top:6px; text-align:right">完成率 33%</div>
+        </div>
+      </div>
+
+      <!-- Group 1 -->
+      <div class="checklist-group">
+        <div class="group-title">🛋 RULLERUM 鲁勒鲁姆 <span class="group-badge">3项</span></div>
+
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox"></div>
+          <div class="check-content">
+            <div class="check-text">清洁坐垫右侧污迹，整理靠背摆放</div>
+            <div class="check-meta">
+              <span class="check-priority priority-high">高优先级</span>
+              <span>产品状态</span>
+            </div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox"></div>
+          <div class="check-content">
+            <div class="check-text">重新放置价格标签确保可见，补充尺寸标注（宽140×深90×高83cm）</div>
+            <div class="check-meta">
+              <span class="check-priority priority-high">高优先级</span>
+              <span>价格信息</span>
+            </div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox checked"></div>
+          <div class="check-content">
+            <div class="check-text done">补充自助取货区库存，或添加可订货说明牌</div>
+            <div class="check-meta">
+              <span class="check-priority priority-high">高优先级</span>
+              <span>库存可用性</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 2 -->
+      <div class="checklist-group">
+        <div class="group-title">🪑 HAVBERG 哈伯格转椅 <span class="group-badge">1项</span></div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox checked"></div>
+          <div class="check-content">
+            <div class="check-text done">补充材质保养说明标签（皮革护理信息）</div>
+            <div class="check-meta">
+              <span class="check-priority priority-med">中优先级</span>
+              <span>价格信息</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 3 -->
+      <div class="checklist-group">
+        <div class="group-title">🛋 KIVIK 奇维三人沙发 <span class="group-badge">2项</span></div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox"></div>
+          <div class="check-content">
+            <div class="check-text">组装检查：扶手连接螺丝未拧紧，存在安全隐患</div>
+            <div class="check-meta">
+              <span class="check-priority priority-high">高优先级</span>
+              <span>产品状态</span>
+            </div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox"></div>
+          <div class="check-content">
+            <div class="check-text">展示区增加颜色/面料选择说明（当前仅展示一种）</div>
+            <div class="check-meta">
+              <span class="check-priority priority-med">中优先级</span>
+              <span>产品陈列</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 4 -->
+      <div class="checklist-group">
+        <div class="group-title">☕ BORGEBY 伯格比茶几 <span class="group-badge">0项</span></div>
+        <div style="padding:12px 20px; font-size:13px; color:var(--ok); font-weight:600">✅ 无需改进，状态优秀！</div>
+      </div>
+
+      <!-- Group 5 -->
+      <div class="checklist-group">
+        <div class="group-title">🛋 SÖDERHAMN 索德汉 <span class="group-badge">2项</span></div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox checked"></div>
+          <div class="check-content">
+            <div class="check-text done">清洁展示面料，去除灰尘和毛球</div>
+            <div class="check-meta">
+              <span class="check-priority priority-med">中优先级</span>
+              <span>产品状态</span>
+            </div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="checkbox"></div>
+          <div class="check-content">
+            <div class="check-text">价格标签脱落，需重新悬挂并确认价格准确</div>
+            <div class="check-meta">
+              <span class="check-priority priority-high">高优先级</span>
+              <span>价格信息</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remaining products placeholder -->
+      <div style="padding:12px 20px; font-size:13px; color:var(--ikea-muted); text-align:center; background: var(--ikea-gray); margin:0 16px 16px; border-radius:8px;">
+        其余 5 个产品 Test Buy 完成后将自动生成改进项
+      </div>
+
+      <div class="btn-section">
+        <button class="btn btn-success" onclick="showToast('📤 改进报告已导出')">
+          📤 导出今日改进报告
+        </button>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
+      <button class="nav-item active" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
+      <button class="nav-item" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
+      <button class="nav-item" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
+    </div>
+  </div>
+
+
+  <!-- ============ SCREEN: WEEKLY ============ -->
+  <div class="screen" id="screen-weekly">
+    <div class="status-bar">
+      <span>10:30</span>
+      <span><span class="logo-badge">IKEA</span></span>
+      <span>⚡ 85%</span>
+    </div>
+    <div class="header">
+      <div>
+        <div class="header-title">本周总结报告</div>
+        <div class="header-sub">W21 · 2026.05.12 — 05.18 · HFB01</div>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+
+      <!-- Week hero card -->
+      <div style="background:linear-gradient(135deg,#003E7A,var(--ikea-blue));color:white;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:var(--ikea-yellow);border-radius:50%;opacity:0.12;"></div>
+        <div style="font-size:12px;opacity:0.7;margin-bottom:4px;">第 21 周 · 自动生成</div>
+        <div style="font-size:20px;font-weight:800;">Test Buy 周报</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px;">
+          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
+            <div style="font-size:22px;font-weight:900;">50</div>
+            <div style="font-size:10px;opacity:0.8;margin-top:2px;">测试产品</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
+            <div style="font-size:22px;font-weight:900;">38</div>
+            <div style="font-size:10px;opacity:0.8;margin-top:2px;">发现问题</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
+            <div style="font-size:22px;font-weight:900;color:var(--ikea-yellow);">71%</div>
+            <div style="font-size:10px;opacity:0.8;margin-top:2px;">问题解决率</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px;text-align:center;backdrop-filter:blur(4px);">
+            <div style="font-size:22px;font-weight:900;">72</div>
+            <div style="font-size:10px;opacity:0.8;margin-top:2px;">平均评分</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI summary -->
+      <div style="margin:16px;border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--ikea-blue);">
+        <div style="background:var(--ikea-blue);color:white;padding:10px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;">
+          🤖 AI 周报摘要
+        </div>
+        <div style="padding:14px 16px;background:#F0F5FF;font-size:13px;line-height:1.7;color:var(--ikea-text);">
+          本周共完成 <strong>50 个产品</strong> Test Buy，平均评分 <strong>72/100</strong>，较上周提升 <strong>+5分</strong>。<br><br>
+          最突出问题集中在 <strong style="color:var(--fail)">价格标签缺失/遮挡</strong>（占所有问题的 37%）和 <strong style="color:var(--warn)">产品清洁度不达标</strong>（29%），两类问题合计占比 <strong>66%</strong>，建议本周重点突破。<br><br>
+          <strong>Top 产品</strong>整体表现优于普通产品（均分 78 vs 68）。BORGEBY 茶几系列连续两周满分 🏆
+        </div>
+      </div>
+
+      <!-- Issue category breakdown -->
+      <div class="section-title">🔍 问题分类分析</div>
+      <div style="margin:0 16px 16px;">
+
+        <!-- Cat 1 - Price -->
+        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
+            <div style="width:44px;height:44px;border-radius:10px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏷</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">价格 & 产品信息</div>
+              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">14 个问题 · 解决 9 个</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:18px;font-weight:900;color:var(--fail);">37%</div>
+              <div style="font-size:11px;color:var(--ikea-muted);">占比最高 ⚠</div>
+            </div>
+          </div>
+          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body">
+            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
+              <div style="height:100%;width:64%;background:var(--ok);border-radius:3px;"></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
+            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
+              • 价格标签被陈列物遮挡：<strong>RULLERUM、SÖDERHAMN</strong> 系列多次出现<br>
+              • 缺少材质保养信息：皮质产品占比高<br>
+              • 尺寸标注不完整：宽×深×高三维需同时显示<br>
+              • 建议每日开店前由专人巡检价格区域
+            </div>
+          </div>
+        </div>
+
+        <!-- Cat 2 - Condition -->
+        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
+            <div style="width:44px;height:44px;border-radius:10px;background:#FFF9F0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✨</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">产品清洁 & 状态</div>
+              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">11 个问题 · 解决 8 个</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:18px;font-weight:900;color:var(--warn);">29%</div>
+              <div style="font-size:11px;color:var(--ikea-muted);">占比第二</div>
+            </div>
+          </div>
+          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body" style="display:none;">
+            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
+              <div style="height:100%;width:73%;background:var(--ok);border-radius:3px;"></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
+            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
+              • 织物沙发积灰严重，建议每日用吸尘器清洁<br>
+              • <strong>KIVIK 奇维</strong> 本周出现2次螺丝松动，安全隐患需定期巡检<br>
+              • 展示垫子/靠枕位置散乱，需规范摆放标准<br>
+              • 建议制定「展示标准照」供员工对照整理
+            </div>
+          </div>
+        </div>
+
+        <!-- Cat 3 - Availability -->
+        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
+            <div style="width:44px;height:44px;border-radius:10px;background:#F0FAF3;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📦</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">库存 & 可购买性</div>
+              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">8 个问题 · 解决 7 个</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:18px;font-weight:900;color:#856404;">21%</div>
+              <div style="font-size:11px;color:var(--ikea-muted);">解决率最高</div>
+            </div>
+          </div>
+          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body" style="display:none;">
+            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
+              <div style="height:100%;width:88%;background:var(--ok);border-radius:3px;"></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
+            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
+              • 自助区库存为零时需立即补货或添加订货说明<br>
+              • <strong>RULLERUM 电动躺椅</strong> 库存频繁归零，建议与供应链沟通<br>
+              • 取货位置标示牌部分脱落，需重新粘贴
+            </div>
+          </div>
+        </div>
+
+        <!-- Cat 4 - Presentation -->
+        <div style="background:white;border:1.5px solid var(--ikea-border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleWeekCat(this)">
+            <div style="width:44px;height:44px;border-radius:10px;background:#F0F5FF;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👁</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">产品陈列</div>
+              <div style="font-size:12px;color:var(--ikea-muted);margin-top:2px;">5 个问题 · 解决 3 个</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:18px;font-weight:900;color:var(--ikea-blue);">13%</div>
+              <div style="font-size:11px;color:var(--ikea-muted);">占比最低</div>
+            </div>
+          </div>
+          <div style="background:var(--ikea-gray);padding:0 16px 14px;" class="week-cat-body" style="display:none;">
+            <div style="height:6px;background:var(--ikea-border);border-radius:3px;margin-bottom:12px;overflow:hidden;">
+              <div style="height:100%;width:60%;background:var(--ok);border-radius:3px;"></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ikea-text);">🎯 重点改进建议</div>
+            <div style="font-size:13px;color:var(--ikea-text);line-height:1.6;">
+              • 部分产品颜色/规格选项未全部展示<br>
+              • 组合产品缺少完整组合展示，仅展示单品<br>
+              • 建议与陈列团队同步 MCC（最商业组合）标准
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue heatmap by day -->
+      <div class="section-title">📅 每日问题数量</div>
+      <div style="margin:0 16px 16px;background:var(--ikea-gray);border-radius:var(--radius);padding:16px;">
+        <div style="display:flex;align-items:flex-end;gap:6px;height:90px;justify-content:space-between;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">9</div>
+            <div style="width:100%;background:var(--fail);border-radius:4px 4px 0 0;height:72px;opacity:0.8;"></div>
+            <span style="font-size:10px;color:var(--ikea-muted);">周一</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">7</div>
+            <div style="width:100%;background:var(--warn);border-radius:4px 4px 0 0;height:56px;opacity:0.8;"></div>
+            <span style="font-size:10px;color:var(--ikea-muted);">周二</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">8</div>
+            <div style="width:100%;background:var(--warn);border-radius:4px 4px 0 0;height:64px;opacity:0.8;"></div>
+            <span style="font-size:10px;color:var(--ikea-muted);">周三</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--ikea-muted);">6</div>
+            <div style="width:100%;background:#856404;border-radius:4px 4px 0 0;height:48px;opacity:0.7;"></div>
+            <span style="font-size:10px;color:var(--ikea-muted);">周四</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--ikea-blue);">8</div>
+            <div style="width:100%;background:var(--ikea-blue);border-radius:4px 4px 0 0;height:64px;opacity:0.6;"></div>
+            <span style="font-size:10px;color:var(--ikea-blue);font-weight:700;">今天</span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--ikea-muted);text-align:center;margin-top:8px;">本周趋势：周一问题最多，后半周趋于稳定</div>
+      </div>
+
+      <!-- Focus areas for next week -->
+      <div class="section-title">🎯 下周集中突破建议</div>
+      <div style="margin:0 16px 16px;display:flex;flex-direction:column;gap:10px;">
+
+        <div style="background:white;border-left:4px solid var(--fail);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:18px;">🏷</span>
+            <span style="font-weight:700;font-size:14px;">P1 · 价格标签专项整治</span>
+            <span style="background:#FFEBEE;color:var(--fail);font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto;">最高频</span>
+          </div>
+          <div style="font-size:13px;color:var(--ikea-muted);line-height:1.5;">建议周一早班统一巡检所有沙发/椅类产品价格牌。重点产品：RULLERUM、SÖDERHAMN、KIVIK</div>
+        </div>
+
+        <div style="background:white;border-left:4px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:18px;">✨</span>
+            <span style="font-weight:700;font-size:14px;">P2 · 产品清洁标准化</span>
+            <span style="background:#FFF3CD;color:#856404;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto;">反复出现</span>
+          </div>
+          <div style="font-size:13px;color:var(--ikea-muted);line-height:1.5;">制定清洁 SOP，织物产品每日吸尘，皮质产品每周擦拭。可参考「展示标准照」对照执行</div>
+        </div>
+
+        <div style="background:white;border-left:4px solid var(--ok);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:18px;">🏆</span>
+            <span style="font-weight:700;font-size:14px;">表扬 · 库存管理改善明显</span>
+            <span style="background:#E8F5E9;color:var(--ok);font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:auto;">解决率88%</span>
+          </div>
+          <div style="font-size:13px;color:var(--ikea-muted);line-height:1.5;">库存问题解决率本周达 88%，较上周提升 15%。团队响应速度明显加快，继续保持 💪</div>
+        </div>
+      </div>
+
+      <!-- Product family ranking -->
+      <div class="section-title">🛋 产品系列得分排行</div>
+      <div style="margin:0 16px 16px;">
+        <div style="background:white;border-radius:var(--radius);border:1.5px solid var(--ikea-border);overflow:hidden;">
+          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
+            <span style="font-size:16px;margin-right:10px;">🥇</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">BORGEBY 伯格比</div>
+              <div style="font-size:12px;color:var(--ikea-muted);">3次测试 · 满分率100%</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;color:var(--ok);">95</div>
+          </div>
+          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
+            <span style="font-size:16px;margin-right:10px;">🥈</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">HAVBERG 哈伯格</div>
+              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 问题均已解决</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;color:var(--ok);">85</div>
+          </div>
+          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
+            <span style="font-size:16px;margin-right:10px;">🥉</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">KIVIK 奇维</div>
+              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 仍有安全问题待查</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;color:var(--warn);">72</div>
+          </div>
+          <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ikea-border);">
+            <span style="font-size:16px;margin-right:10px;">4️⃣</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">SÖDERHAMN 索德汉</div>
+              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 价格标签反复问题</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;color:var(--warn);">68</div>
+          </div>
+          <div style="display:flex;align-items:center;padding:12px 16px;">
+            <span style="font-size:16px;margin-right:10px;">5️⃣</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;">RULLERUM 鲁勒鲁姆</div>
+              <div style="font-size:12px;color:var(--ikea-muted);">5次测试 · 需重点关注</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;color:var(--fail);">60</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div class="btn-section" style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-primary" onclick="showToast('📤 周报已分享给团队')">
+          📤 分享周报给团队
+        </button>
+        <button class="btn btn-outline" onclick="showToast('📥 已导出 PDF')">
+          📥 导出 PDF 报告
+        </button>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
+      <button class="nav-item" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
+      <button class="nav-item" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
+      <button class="nav-item active" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
+    </div>
+  </div>
+
+
+
+
+  <!-- ============ SCREEN: TEAM ============ -->
+  <div class="screen" id="screen-team">
+    <div class="status-bar">
+      <span>10:30</span>
+      <span><span class="logo-badge">IKEA</span></span>
+      <span>⚡ 85%</span>
+    </div>
+    <div class="header">
+      <div>
+        <div class="header-title">团队进展</div>
+        <div class="header-sub">HFB01 起居 · 2026年5月18日</div>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+      <div class="team-overview">
+        <div class="team-overview-title">今日整体完成情况</div>
+        <div class="ring-wrapper">
+          <div class="ring-chart">
+            <div class="ring-inner">55%<span>完成</span></div>
+          </div>
+          <div class="ring-legend">
+            <div class="legend-row">
+              <div class="legend-dot" style="background:var(--ok)"></div>
+              <span style="font-size:13px">已完成 <strong>4/12</strong> 项改进</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:var(--warn)"></div>
+              <span style="font-size:13px">进行中 <strong>2</strong> 个产品</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:var(--ikea-border)"></div>
+              <span style="font-size:13px">待开始 <strong>5</strong> 个产品</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">👥 团队成员</div>
+
+      <div class="team-member">
+        <div class="avatar" style="background:#E67700">王</div>
+        <div class="member-info">
+          <div class="member-name">Adam Wang <span style="font-size:11px; background:#FFD700; color:#333; padding:1px 6px; border-radius:8px; font-weight:600">你</span></div>
+          <div class="member-status">已完成 3 个产品 · 解决 2 项问题</div>
+        </div>
+        <div class="member-progress">
+          <div class="member-pct">30%</div>
+          <div class="member-tasks">3/10 产品</div>
+        </div>
+      </div>
+
+      <div class="team-member">
+        <div class="avatar" style="background:#0058A3">李</div>
+        <div class="member-info">
+          <div class="member-name">Li Ming</div>
+          <div class="member-status">已完成 2 个产品 · 解决 2 项问题</div>
+        </div>
+        <div class="member-progress">
+          <div class="member-pct">20%</div>
+          <div class="member-tasks">2/10 产品</div>
+        </div>
+      </div>
+
+      <div class="team-member">
+        <div class="avatar" style="background:#168740">陈</div>
+        <div class="member-info">
+          <div class="member-name">Chen Jia</div>
+          <div class="member-status">正在进行中…</div>
+        </div>
+        <div class="member-progress">
+          <div class="member-pct">0%</div>
+          <div class="member-tasks">1 进行中</div>
+        </div>
+      </div>
+
+      <div class="team-member">
+        <div class="avatar" style="background:#767676">赵</div>
+        <div class="member-info">
+          <div class="member-name">Zhao Lei</div>
+          <div class="member-status">尚未开始</div>
+        </div>
+        <div class="member-progress">
+          <div class="member-pct" style="color:var(--ikea-muted)">-</div>
+          <div class="member-tasks">待开始</div>
+        </div>
+      </div>
+
+      <div class="section-title">📋 实时动态</div>
+
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div>
+          <div class="activity-text"><strong>Adam</strong> 完成了 BORGEBY 茶几 Test Buy ✅（评分90/100）</div>
+          <div class="activity-time">10:22</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div>
+          <div class="activity-text"><strong>Li Ming</strong> 解决了「RULLERUM 库存补货」改进项 ✓</div>
+          <div class="activity-time">10:18</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot warn"></div>
+        <div>
+          <div class="activity-text"><strong>Adam</strong> 发现 KIVIK 扶手螺丝安全问题，需立即处理 ⚠</div>
+          <div class="activity-time">10:05</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div>
+          <div class="activity-text"><strong>系统</strong> 自动选取今日10个测试产品，包含3个Top产品</div>
+          <div class="activity-time">09:30</div>
+        </div>
+      </div>
+
+      <div class="section-title">🏆 本周完成率趋势</div>
+      <div style="margin: 0 16px 16px; background:var(--ikea-gray); border-radius:var(--radius); padding:16px">
+        <div style="display:flex; align-items:flex-end; gap:8px; height:80px; justify-content:space-between">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:36px; background:var(--ikea-blue); border-radius:4px 4px 0 0; height:48px"></div>
+            <span style="font-size:11px;color:var(--ikea-muted)">周一</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:36px; background:var(--ikea-blue); border-radius:4px 4px 0 0; height:64px"></div>
+            <span style="font-size:11px;color:var(--ikea-muted)">周二</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:36px; background:var(--ok); border-radius:4px 4px 0 0; height:72px"></div>
+            <span style="font-size:11px;color:var(--ikea-muted)">周三</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:36px; background:var(--ikea-blue); border-radius:4px 4px 0 0; height:56px"></div>
+            <span style="font-size:11px;color:var(--ikea-muted)">周四</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:36px; background:var(--warn); border-radius:4px 4px 0 0; height:40px; opacity:0.5"></div>
+            <span style="font-size:11px;color:var(--ikea-muted)">今天</span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--ikea-muted);text-align:center;margin-top:8px">本周平均完成率 68% · 目标 80%</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showScreen('home')"><span class="icon">🏠</span>今日任务</button>
+      <button class="nav-item" onclick="showScreen('checklist')"><span class="icon">✅</span>改进清单</button>
+      <button class="nav-item active" onclick="showScreen('team')"><span class="icon">👥</span>团队进展</button>
+      <button class="nav-item" onclick="showScreen('weekly')"><span class="icon">📊</span>周报</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.bottom-nav').forEach(nav => {
+    nav.querySelectorAll('.nav-item').forEach((btn, i) => {
+      btn.classList.remove('active');
+    });
+  });
+}
+
+function openDetail(idx) {
+  showScreen('detail');
+}
+
+function toggleCheck(item) {
+  const cb = item.querySelector('.checkbox');
+  const text = item.querySelector('.check-text');
+  cb.classList.toggle('checked');
+  text.classList.toggle('done');
+  if (cb.classList.contains('checked')) {
+    showToast('✅ 已标记为完成！');
+  } else {
+    showToast('↩ 已取消完成标记');
+  }
+}
+
+function toggleWeekCat(header) {
+  const body = header.nextElementSibling;
+  if (body && body.classList.contains('week-cat-body')) {
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#FFDA1A;padding:12px 20px;align-items:center;gap:12px;z-index:9999;box-shadow:0 -2px 12px rgba(0,0,0,0.15);">
+  <div style="font-size:22px;">📲</div>
+  <div style="flex:1;">
+    <div style="font-size:14px;font-weight:700;color:#111;">安装到手机桌面</div>
+    <div style="font-size:12px;color:#555;">无需应用商店，一键安装</div>
+  </div>
+  <button onclick="installApp()" style="background:#0058A3;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">立即安装</button>
+  <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#555;">✕</button>
+</div>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('SW registered:', r.scope))
+      .catch(e => console.log('SW failed:', e));
+  });
+}
+
+// Install banner
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').style.display = 'none';
+  showToast('✅ 已安装到桌面！');
+});
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choice => {
+      if (choice.outcome === 'accepted') showToast('🎉 安装成功！');
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+    });
+  }
+}
+</script>
+</body>
+</html>
