@@ -150,6 +150,31 @@ body{font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background:#EB
 /* share panel */
 .panel{background:#fff;border-top:1px solid var(--border);padding:16px 20px;display:none}
 .panel.open{display:block}
+
+/* AI analysis */
+.ai-box{margin:0 20px 14px;border-radius:var(--r);overflow:hidden;border:1.5px solid var(--blue)}
+.ai-box-hdr{background:var(--blue);color:#fff;padding:10px 14px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ai-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;gap:12px;background:#F0F5FF}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-result{padding:14px}
+.ai-score-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.ai-score-num{font-size:38px;font-weight:900}
+.ai-score-bar{flex:1}
+.ai-issue{display:flex;align-items:flex-start;gap:8px;padding:10px;background:#FFF9F0;border-radius:8px;border-left:3px solid var(--warn);margin-bottom:8px;font-size:13px;line-height:1.5}
+.ai-tag{font-size:11px;background:#FFE8C0;color:#8B5000;padding:1px 6px;border-radius:10px;font-weight:600;margin-bottom:3px;display:inline-block}
+.ai-ok{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#F0FAF3;border-radius:8px;border-left:3px solid var(--ok);margin-bottom:6px;font-size:13px}
+
+/* Settings modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:390px;max-height:80vh;overflow-y:auto;padding:20px}
+.modal h2{font-size:17px;font-weight:800;margin-bottom:4px}
+.modal-close{float:right;background:var(--gray);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;line-height:28px;text-align:center}
+.field{margin-top:14px}
+.field label{font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px}
+.field input,.field select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue)}
 </style>
 </head>
 <body>
@@ -193,7 +218,8 @@ body{font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background:#EB
   <div class="sbar"><span id="time-detail">--:--</span><span><span class="logo">IKEA</span></span><span id="det-pos">1/10</span></div>
   <div class="hdr">
     <div class="hdr-back" onclick="nav('home')">←</div>
-    <div><h1>产品评估</h1><p id="det-subtitle">填写检查结果</p></div>
+    <div style="flex:1"><h1>产品评估</h1><p id="det-subtitle">填写检查结果</p></div>
+    <div onclick="openSettings()" style="font-size:22px;cursor:pointer;opacity:.85;padding:4px">⚙️</div>
   </div>
   <div class="scroll">
     <div class="dhero">
@@ -210,8 +236,27 @@ body{font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background:#EB
     </button>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple onchange="handlePhotos(event)">
 
+    <!-- AI Analysis Result (shown after photos uploaded) -->
+    <div id="ai-section" style="display:none">
+      <div class="divider"></div>
+      <div class="stitle" style="display:flex;align-items:center;justify-content:space-between;padding-right:20px">
+        <span>🤖 AI 分析结果</span>
+        <button onclick="runAIAnalysis()" style="background:var(--blue);color:#fff;border:none;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer">重新分析</button>
+      </div>
+      <div id="ai-box" class="ai-box">
+        <div class="ai-box-hdr">🤖 正在分析照片…</div>
+        <div id="ai-content" class="ai-loading">
+          <div class="spinner"></div>
+          <div style="font-size:13px;color:var(--muted)">AI 正在根据 Merchandising Basics 评估…</div>
+        </div>
+      </div>
+    </div>
+
     <div class="divider"></div>
-    <div class="stitle">📋 Merchandising Basics 评估</div>
+    <div class="stitle" style="display:flex;align-items:center;justify-content:space-between;padding-right:20px">
+      <span>📋 评估结果</span>
+      <span id="criteria-status" style="font-size:12px;color:var(--muted)">AI分析后自动填写</span>
+    </div>
     <div class="criteria-list" id="criteria-list"></div>
 
     <div class="btn-sec">
@@ -325,6 +370,32 @@ body{font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background:#EB
     <button class="ni" onclick="nav('checklist')"><span class="ic">✅</span>改进清单</button>
     <button class="ni" onclick="nav('team')"><span class="ic">👥</span>团队</button>
     <button class="ni active" onclick="nav('weekly')"><span class="ic">📊</span>周报</button>
+  </div>
+</div>
+
+<!-- ====== SETTINGS MODAL ====== -->
+<div class="modal-bg" id="settings-modal" onclick="closeSettingsIfBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSettings()">✕</button>
+    <h2>⚙️ AI 设置</h2>
+    <p style="font-size:13px;color:var(--muted);margin-top:4px">配置 AI 分析所需的 API Key（存储在本地，不会上传）</p>
+    <div class="field">
+      <label>AI 提供商</label>
+      <select id="ai-provider" onchange="saveSettings()">
+        <option value="openai">OpenAI (GPT-4o)</option>
+        <option value="gemini">Google Gemini 1.5 Flash（免费）</option>
+      </select>
+    </div>
+    <div class="field">
+      <label id="key-label">API Key</label>
+      <input type="password" id="ai-key" placeholder="sk-..." oninput="saveSettings()" autocomplete="off">
+    </div>
+    <div id="key-hint" style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6"></div>
+    <div style="margin-top:16px;padding:12px;background:#E8F4FD;border-radius:8px;font-size:12px;color:var(--blue);line-height:1.6">
+      🔒 API Key 仅保存在你自己的手机本地（localStorage），不会发送给任何第三方
+    </div>
+    <button class="btn btn-prim" style="margin-top:16px" onclick="testAPIKey()">🔍 测试连接</button>
+    <button class="btn btn-out" style="margin-top:8px" onclick="closeSettings()">关闭</button>
   </div>
 </div>
 
@@ -549,32 +620,22 @@ function openDetail(artno) {
   // Photos
   renderPhotos(ev.photos || []);
 
+  // Restore AI result if already analyzed
+  if (ev.aiResult) {
+    document.getElementById('ai-section').style.display = '';
+    renderAIResult(ev.aiResult);
+    document.getElementById('criteria-status').textContent = '✅ AI 已自动填写，可手动修正';
+  } else if (ev.photos && ev.photos.length) {
+    document.getElementById('ai-section').style.display = '';
+    document.getElementById('ai-box').querySelector('.ai-box-hdr').textContent = '🤖 AI 分析';
+    document.getElementById('ai-content').className = 'ai-result';
+    document.getElementById('ai-content').innerHTML = '<div style="padding:12px;font-size:13px;color:var(--muted);text-align:center">照片已上传，点击「重新分析」获取 AI 评估</div>';
+  } else {
+    document.getElementById('ai-section').style.display = 'none';
+  }
+
   // Criteria
-  const cl = document.getElementById('criteria-list');
-  cl.innerHTML = '';
-  CRITERIA.forEach(c => {
-    const val = ev.criteria[c.id] || null;
-    const note = ev.notes[c.id] || '';
-    const div = document.createElement('div');
-    div.className = 'crit' + (val==='ok'?' ok-crit':val==='fail'?' fail-crit':'');
-    div.id = 'crit-'+c.id;
-    div.innerHTML = `
-      <div class="crit-hdr">
-        <div class="crit-icon">${c.icon}</div>
-        <div class="crit-info">
-          <div class="crit-label">${c.label}</div>
-          <div class="crit-sub">${c.sub}</div>
-        </div>
-        <div class="crit-btns">
-          <button class="crit-btn${val==='ok'?' ok-sel':''}" onclick="setCrit('${c.id}','ok')">OK</button>
-          <button class="crit-btn${val==='fail'?' fail-sel':''}" onclick="setCrit('${c.id}','fail')">✗</button>
-        </div>
-      </div>
-      <div class="crit-note" style="${val?'':'display:none'}" id="note-${c.id}">
-        <textarea rows="2" placeholder="备注（可选，描述具体问题）" onchange="setNote('${c.id}',this.value)">${note}</textarea>
-      </div>`;
-    cl.appendChild(div);
-  });
+  renderCriteriaFromEval(ev);
   nav('detail');
 }
 
@@ -622,6 +683,233 @@ function saveEval() {
   setTimeout(()=>nav('home'), 800);
 }
 
+// ====== AI ANALYSIS ======
+const AI_SYSTEM_PROMPT = `You are an IKEA store merchandising expert. Evaluate product photos based on the 4 IKEA Merchandising Basics:
+
+1. PRESENTED: Product must be displayed so customers can see, touch and experience it.
+2. PERFECT CONDITION: Clean, correctly assembled, meets all safety standards, no damage.
+3. PRICED & COMMUNICATED: Price tag visible and unobstructed; includes product name, price, dimensions (W×D×H), color/material, care instructions, customer benefits.
+4. AVAILABLE FOR PURCHASE: Stock available for take-away OR clear ordering/delivery instructions shown.
+
+Also check:
+5. BUYING INSTRUCTIONS CLEAR: Pick-up location indicated, purchasing method clear, QR codes working if present.
+
+Respond ONLY with a JSON object (no markdown, no explanation):
+{
+  "score": <0-100>,
+  "presented":  {"status": "ok"|"fail", "note": "<specific observation in Chinese>"},
+  "condition":  {"status": "ok"|"fail", "note": "<specific observation in Chinese>"},
+  "priced":     {"status": "ok"|"fail", "note": "<specific observation in Chinese>"},
+  "buying":     {"status": "ok"|"fail", "note": "<specific observation in Chinese>"},
+  "available":  {"status": "ok"|"fail", "note": "<specific observation in Chinese>"},
+  "summary": "<2-3 sentence overall assessment in Chinese>",
+  "top_issues": ["<actionable improvement 1 in Chinese>", "<actionable improvement 2 in Chinese>"]
+}`;
+
+function getAISettings() {
+  return {
+    provider: localStorage.getItem('ai_provider') || 'openai',
+    key: localStorage.getItem('ai_key') || ''
+  };
+}
+function saveSettings() {
+  localStorage.setItem('ai_provider', document.getElementById('ai-provider').value);
+  localStorage.setItem('ai_key', document.getElementById('ai-key').value);
+  updateKeyHint();
+}
+function updateKeyHint() {
+  const provider = document.getElementById('ai-provider').value;
+  const hints = {
+    openai: '获取地址：platform.openai.com → API Keys。需要 GPT-4o 访问权限。',
+    gemini: '获取地址：aistudio.google.com → Get API Key。免费使用 Gemini 1.5 Flash。'
+  };
+  document.getElementById('key-hint').textContent = hints[provider] || '';
+  document.getElementById('key-label').textContent = provider === 'gemini' ? 'Gemini API Key' : 'OpenAI API Key';
+}
+function openSettings() {
+  const s = getAISettings();
+  document.getElementById('ai-provider').value = s.provider;
+  document.getElementById('ai-key').value = s.key;
+  updateKeyHint();
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+function closeSettingsIfBg(e) { if (e.target === document.getElementById('settings-modal')) closeSettings(); }
+
+async function testAPIKey() {
+  const s = getAISettings();
+  if (!s.key) { showToast('请先输入 API Key'); return; }
+  showToast('🔍 测试中…');
+  try {
+    const ok = await callVisionAPI(['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='], 'Reply with: {"score":100,"presented":{"status":"ok","note":"test"},"condition":{"status":"ok","note":"test"},"priced":{"status":"ok","note":"test"},"buying":{"status":"ok","note":"test"},"available":{"status":"ok","note":"test"},"summary":"test","top_issues":[]}');
+    if (ok) showToast('✅ API Key 有效，连接正常！');
+  } catch(e) { showToast('❌ 连接失败：' + e.message.slice(0,40)); }
+}
+
+async function callVisionAPI(base64Images, prompt) {
+  const s = getAISettings();
+  if (!s.key) throw new Error('未配置 API Key，请点击 ⚙️ 设置');
+
+  if (s.provider === 'gemini') {
+    return await callGemini(base64Images, prompt, s.key);
+  } else {
+    return await callOpenAI(base64Images, prompt, s.key);
+  }
+}
+
+async function callOpenAI(images, prompt, key) {
+  const content = [{ type: 'text', text: prompt }];
+  images.slice(0, 4).forEach(img => {
+    content.push({ type: 'image_url', image_url: { url: img, detail: 'low' } });
+  });
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 800,
+      messages: [
+        { role: 'system', content: AI_SYSTEM_PROMPT },
+        { role: 'user', content }
+      ]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'OpenAI API 错误 ' + res.status);
+  }
+  const data = await res.json();
+  return JSON.parse(data.choices[0].message.content);
+}
+
+async function callGemini(images, prompt, key) {
+  const parts = [{ text: AI_SYSTEM_PROMPT + '\n\nProduct photos attached. Evaluate now.' }];
+  images.slice(0, 4).forEach(img => {
+    const [header, b64] = img.split(',');
+    const mimeType = header.match(/:(.*?);/)[1];
+    parts.push({ inline_data: { mime_type: mimeType, data: b64 } });
+  });
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts }] })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'Gemini API 错误 ' + res.status);
+  }
+  const data = await res.json();
+  const text = data.candidates[0].content.parts[0].text;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('AI 返回格式异常');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function runAIAnalysis() {
+  const ev = state.evals[currentArtno];
+  if (!ev || !ev.photos || !ev.photos.length) {
+    showToast('请先上传照片'); return;
+  }
+  const s = getAISettings();
+  if (!s.key) {
+    openSettings();
+    showToast('⚙️ 请先配置 API Key');
+    return;
+  }
+
+  // Show loading state
+  document.getElementById('ai-section').style.display = '';
+  document.getElementById('ai-box').querySelector('.ai-box-hdr').textContent = '🤖 AI 正在分析照片…';
+  document.getElementById('ai-content').className = 'ai-loading';
+  document.getElementById('ai-content').innerHTML = '<div class="spinner"></div><div style="font-size:13px;color:var(--muted)">根据 Merchandising Basics 评估中，请稍候…</div>';
+
+  try {
+    const p = state.products.find(x => x.artno === currentArtno);
+    const extraPrompt = `Product: ${p.name}, Price: ¥${p.price}, Family: ${p.family}. Evaluate the uploaded photos.`;
+    const result = await callVisionAPI(ev.photos, extraPrompt);
+
+    // Store AI result
+    ev.aiResult = result;
+    // Auto-fill criteria from AI
+    CRITERIA.forEach(c => {
+      const r = result[c.id];
+      if (r) {
+        ev.criteria[c.id] = r.status;
+        if (r.note) ev.notes[c.id] = r.note;
+      }
+    });
+    saveState();
+    renderAIResult(result);
+    renderCriteriaFromEval(ev);
+    document.getElementById('criteria-status').textContent = '✅ AI 已自动填写，可手动修正';
+    showToast('✅ AI 分析完成！');
+  } catch(err) {
+    document.getElementById('ai-box').querySelector('.ai-box-hdr').textContent = '🤖 AI 分析';
+    document.getElementById('ai-content').className = 'ai-result';
+    document.getElementById('ai-content').innerHTML = `<div style="color:var(--fail);font-size:13px;padding:8px">❌ 分析失败：${err.message}<br><br><button onclick="openSettings()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">⚙️ 检查 API 设置</button></div>`;
+    showToast('❌ ' + err.message.slice(0, 40));
+  }
+}
+
+function renderAIResult(r) {
+  const score = r.score || 0;
+  const scoreColor = score >= 80 ? 'var(--ok)' : score >= 60 ? 'var(--warn)' : 'var(--fail)';
+  document.getElementById('ai-box').querySelector('.ai-box-hdr').textContent = '🤖 AI 分析完成';
+
+  let issuesHtml = '';
+  CRITERIA.forEach(c => {
+    const cr = r[c.id];
+    if (!cr) return;
+    if (cr.status === 'fail') {
+      issuesHtml += `<div class="ai-issue"><div style="font-size:16px;flex-shrink:0">${c.icon}</div><div><div class="ai-tag">${c.label.replace(/^\d\.\s/,'').split('？')[0]}</div><div>${cr.note}</div></div></div>`;
+    } else {
+      issuesHtml += `<div class="ai-ok"><span style="color:var(--ok);font-weight:700">✓</span><span>${c.icon} ${c.label.replace(/^\d\.\s/,'').split('？')[0]}：${cr.note || '符合标准'}</span></div>`;
+    }
+  });
+
+  document.getElementById('ai-content').className = 'ai-result';
+  document.getElementById('ai-content').innerHTML = `
+    <div class="ai-score-row">
+      <div class="ai-score-num" style="color:${scoreColor}">${score}</div>
+      <div class="ai-score-bar">
+        <div style="font-size:12px;color:var(--muted)">综合评分（满分100）</div>
+        <div class="prg-b" style="margin-top:6px"><div class="prg-f" style="width:${score}%;background:${scoreColor}"></div></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">${r.summary || ''}</div>
+      </div>
+    </div>
+    ${issuesHtml}
+    ${r.top_issues && r.top_issues.length ? '<div style="margin-top:10px;font-size:13px;font-weight:600;color:var(--text)">🎯 优先改进：</div>' + r.top_issues.map(i=>`<div style="margin-top:6px;padding:8px 10px;background:var(--gray);border-radius:6px;font-size:13px">• ${i}</div>`).join('') : ''}
+  `;
+}
+
+function renderCriteriaFromEval(ev) {
+  const cl = document.getElementById('criteria-list');
+  cl.innerHTML = '';
+  CRITERIA.forEach(c => {
+    const val = ev.criteria[c.id] || null;
+    const note = ev.notes[c.id] || '';
+    const div = document.createElement('div');
+    div.className = 'crit' + (val==='ok'?' ok-crit':val==='fail'?' fail-crit':'');
+    div.id = 'crit-'+c.id;
+    div.innerHTML = `
+      <div class="crit-hdr">
+        <div class="crit-icon">${c.icon}</div>
+        <div class="crit-info">
+          <div class="crit-label">${c.label}</div>
+          <div class="crit-sub">${note || c.sub}</div>
+        </div>
+        <div class="crit-btns">
+          <button class="crit-btn${val==='ok'?' ok-sel':''}" onclick="setCrit('${c.id}','ok')">OK</button>
+          <button class="crit-btn${val==='fail'?' fail-sel':''}" onclick="setCrit('${c.id}','fail')">✗</button>
+        </div>
+      </div>
+      <div class="crit-note" style="${val?'':'display:none'}" id="note-${c.id}">
+        <textarea rows="2" placeholder="备注（可选）" onchange="setNote('${c.id}',this.value)">${note}</textarea>
+      </div>`;
+    cl.appendChild(div);
+  });
+}
+
 // ====== CAMERA ======
 function openCamera() {
   document.getElementById('cameraInput').click();
@@ -642,7 +930,10 @@ function handlePhotos(event) {
       // Render immediately after EACH photo — don't wait for all
       renderPhotos(ev.photos);
       saveState();
-      if (loaded === total) showToast('📷 已添加 ' + total + ' 张照片');
+      if (loaded === total) {
+        showToast('📷 已添加 ' + total + ' 张照片，开始 AI 分析…');
+        runAIAnalysis(); // auto-trigger analysis
+      }
     };
     reader.readAsDataURL(file);
   });
